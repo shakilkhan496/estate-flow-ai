@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectSidebarOpen } from '@/store/selectors/uiSelectors';
 import { fetchCurrentUser } from '@/store/actions/authActions';
 import { selectIsAuthLoading } from '@/store/selectors/authSelectors';
+import { initSidebarFromStorage } from '@/store/slices/uiSlice';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -22,6 +23,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   useEffect(() => {
     setMounted(true);
     dispatch(fetchCurrentUser());
+    dispatch(initSidebarFromStorage());
     
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);

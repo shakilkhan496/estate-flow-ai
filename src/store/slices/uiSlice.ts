@@ -24,9 +24,23 @@ const uiSlice = createSlice({
   reducers: {
     toggleSidebar: (state) => {
       state.sidebarOpen = !state.sidebarOpen;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sidebarOpen', String(state.sidebarOpen));
+      }
     },
     setSidebarOpen: (state, action: PayloadAction<boolean>) => {
       state.sidebarOpen = action.payload;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sidebarOpen', String(action.payload));
+      }
+    },
+    initSidebarFromStorage: (state) => {
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('sidebarOpen');
+        if (stored !== null) {
+          state.sidebarOpen = stored === 'true';
+        }
+      }
     },
     addToast: (state, action: PayloadAction<Omit<Toast, 'id'>>) => {
       state.toasts.push({
@@ -49,6 +63,7 @@ const uiSlice = createSlice({
 export const {
   toggleSidebar,
   setSidebarOpen,
+  initSidebarFromStorage,
   addToast,
   removeToast,
   clearToasts,
