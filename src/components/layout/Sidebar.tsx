@@ -172,7 +172,7 @@ export default function Sidebar() {
           whileTap={{ scale: 0.98 }}
           onClick={handleLogout}
           className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-red-600 hover:bg-red-50 transition-colors',
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg w-full text-red-600 hover:bg-red-50 transition-colors cursor-pointer',
             !isOpen && !mobile && 'justify-center'
           )}
         >
