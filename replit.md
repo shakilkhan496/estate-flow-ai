@@ -1,48 +1,87 @@
-# replit.md
+# Multi-Role Admin Dashboard Starter Template
 
 ## Overview
-
-This is a Next.js 16 starter project using the App Router architecture. It's a fresh scaffolded application created with `create-next-app`, providing a foundation for building React-based web applications with server-side rendering capabilities. The project uses TypeScript for type safety and Tailwind CSS v4 for styling.
+A Next.js 14 admin dashboard starter template with multi-role support, built on Bootstrap 5 and React Bootstrap. This template provides a solid foundation for building admin panels with role-based access control.
 
 ## User Preferences
-
 Preferred communication style: Simple, everyday language.
 
-## System Architecture
+## Project Structure
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── (admin)/           # Protected admin pages
+│   └── (other)/           # Public pages (auth, error pages)
+├── assets/                 # Static assets (images, SCSS)
+├── components/             # Reusable components
+│   ├── layout/            # Layout components (Header, Footer, Sidebar)
+│   └── wrappers/          # Context providers and wrappers
+├── context/                # React contexts
+│   ├── constants.ts       # App configuration
+│   └── RoleContext.tsx    # Role-based access control
+├── lib/                    # Utility libraries
+│   └── mongodb.ts         # MongoDB/Mongoose connection
+└── types/                  # TypeScript type definitions
+```
 
-### Frontend Architecture
-- **Framework**: Next.js 16 with App Router (located in `/app` directory)
-- **UI Library**: React 19
-- **Styling**: Tailwind CSS v4 with PostCSS integration
-- **Typography**: Geist font family (sans and mono variants) loaded via `next/font`
+## Key Features
+- Multi-role authentication system (Admin, Manager, User)
+- MongoDB database with Mongoose ODM
+- Responsive sidebar navigation
+- Dashboard analytics with charts (ApexCharts)
+- Form components with validation (React Hook Form + Yup)
 
-### Routing Structure
-- Uses Next.js App Router with file-based routing
-- Root layout defined in `app/layout.tsx` applies global styles and fonts
-- Main page component in `app/page.tsx`
+## Database
+MongoDB is configured with Mongoose. The connection is managed in `src/lib/mongodb.ts`.
 
-### Design Patterns
-- **Component Architecture**: React functional components with TypeScript
-- **Styling Approach**: Utility-first CSS with Tailwind, supporting dark mode via `prefers-color-scheme`
-- **Path Aliases**: Configured with `@/*` mapping to project root for cleaner imports
+Usage in API routes:
+```typescript
+import connectDB from '@/lib/mongodb'
 
-### Build Configuration
-- TypeScript configured with strict mode and ES2017 target
-- Module resolution set to "bundler" for Next.js compatibility
-- ESLint configured with Next.js recommended rules
+export async function GET() {
+  await connectDB()
+  // Your database operations here
+}
+```
 
-## External Dependencies
+Environment variable required:
+- `MONGODB_URI` - MongoDB connection string
 
-### Core Dependencies
-- `next`: 16.1.6 - React framework for production
-- `react`: 19.2.3 - UI component library
-- `react-dom`: 19.2.3 - React DOM renderer
+## Role System
+The app includes a `RoleContext` that provides:
+- `user` - Current user object with role
+- `hasPermission(roles)` - Check if user has required role
+- `isAdmin` - Boolean for admin check
+- `isManager` - Boolean for manager or admin check
 
-### Development Dependencies
-- `tailwindcss`: v4 - Utility-first CSS framework
-- `@tailwindcss/postcss`: v4 - PostCSS plugin for Tailwind
-- `typescript`: v5 - Type checking
-- `eslint` + `eslint-config-next`: Code linting
+Roles: `admin`, `manager`, `user`
 
-### External Services
-- None currently configured. The project is ready for integrations like databases, authentication, or third-party APIs as needed.
+## Configuration
+Edit `src/context/constants.ts` to customize:
+- `APP_NAME` - Application name shown in header/footer
+- `DEFAULT_PAGE_TITLE` - Browser tab title
+
+## Development
+```bash
+npm run dev      # Start development server on port 5000
+npm run build    # Build for production
+npm run start    # Start production server
+```
+
+## Tech Stack
+- Next.js 14 (App Router)
+- React 18
+- TypeScript
+- Bootstrap 5 / React Bootstrap
+- MongoDB / Mongoose
+- SCSS
+- ApexCharts
+- React Hook Form + Yup
+
+## Recent Changes
+- Added MongoDB/Mongoose integration with connection pooling
+- Removed LAHomes real estate branding
+- Replaced logo images with text-based branding
+- Restructured navigation for generic admin use
+- Added RoleContext for multi-role support
+- Updated authentication pages
