@@ -8,23 +8,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Project Structure
 ```
+app/                        # Next.js App Router pages
+├── globals.css            # Tailwind CSS and shadcn variables
+├── layout.tsx             # Root layout
+└── page.tsx               # Home page
 src/
-├── app/                    # Next.js App Router pages
-│   ├── (admin)/           # Protected admin pages
-│   ├── (other)/           # Public pages (auth, error pages)
-│   └── globals.css        # Tailwind CSS and shadcn variables
-├── assets/                 # Static assets (images, SCSS)
 ├── components/             # Reusable components
-│   ├── layout/            # Layout components (Header, Footer, Sidebar)
-│   ├── ui/                # shadcn/ui components
-│   └── wrappers/          # Context providers and wrappers
-├── context/                # React contexts
-│   ├── constants.ts       # App configuration
-│   └── RoleContext.tsx    # Role-based access control
-├── lib/                    # Utility libraries
-│   ├── mongodb.ts         # MongoDB/Mongoose connection
-│   └── utils.ts           # Tailwind utility functions (cn)
-└── types/                  # TypeScript type definitions
+│   └── ui/                # shadcn/ui components
+├── hooks/                  # Custom React hooks
+└── lib/                    # Utility libraries
+    ├── mongodb.ts         # MongoDB/Mongoose connection
+    └── utils.ts           # Tailwind utility functions (cn)
 ```
 
 ## Key Features
