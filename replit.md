@@ -1,7 +1,7 @@
 # Multi-Role Admin Dashboard Starter Template
 
 ## Overview
-A Next.js 14 admin dashboard starter template with multi-role support, built on Bootstrap 5 and React Bootstrap. This template provides a solid foundation for building admin panels with role-based access control.
+A Next.js 14 admin dashboard starter template with multi-role support, built with shadcn/ui and Tailwind CSS. This template provides a solid foundation for building admin panels with role-based access control.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -11,25 +11,47 @@ Preferred communication style: Simple, everyday language.
 src/
 ├── app/                    # Next.js App Router pages
 │   ├── (admin)/           # Protected admin pages
-│   └── (other)/           # Public pages (auth, error pages)
+│   ├── (other)/           # Public pages (auth, error pages)
+│   └── globals.css        # Tailwind CSS and shadcn variables
 ├── assets/                 # Static assets (images, SCSS)
 ├── components/             # Reusable components
 │   ├── layout/            # Layout components (Header, Footer, Sidebar)
+│   ├── ui/                # shadcn/ui components
 │   └── wrappers/          # Context providers and wrappers
 ├── context/                # React contexts
 │   ├── constants.ts       # App configuration
 │   └── RoleContext.tsx    # Role-based access control
 ├── lib/                    # Utility libraries
-│   └── mongodb.ts         # MongoDB/Mongoose connection
+│   ├── mongodb.ts         # MongoDB/Mongoose connection
+│   └── utils.ts           # Tailwind utility functions (cn)
 └── types/                  # TypeScript type definitions
 ```
 
 ## Key Features
 - Multi-role authentication system (Admin, Manager, User)
 - MongoDB database with Mongoose ODM
-- Responsive sidebar navigation
-- Dashboard analytics with charts (ApexCharts)
+- shadcn/ui components (Button, Card, Input, Dialog, Table, etc.)
+- Tailwind CSS styling with dark mode support
 - Form components with validation (React Hook Form + Yup)
+
+## shadcn/ui Components
+Available components in `src/components/ui/`:
+- Avatar, Badge, Button, Card, Checkbox
+- Dialog, Dropdown Menu, Input, Label
+- Select, Separator, Switch, Table
+- Tabs, Textarea, Tooltip
+
+Usage:
+```typescript
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+
+<Button variant="outline">Click me</Button>
+<Card>
+  <CardHeader><CardTitle>Title</CardTitle></CardHeader>
+  <CardContent>Content here</CardContent>
+</Card>
+```
 
 ## Database
 MongoDB is configured with Mongoose. The connection is managed in `src/lib/mongodb.ts`.
@@ -72,13 +94,14 @@ npm run start    # Start production server
 - Next.js 14 (App Router)
 - React 18
 - TypeScript
-- Bootstrap 5 / React Bootstrap
+- Tailwind CSS
+- shadcn/ui (Radix UI primitives)
 - MongoDB / Mongoose
-- SCSS
-- ApexCharts
+- Lucide React (icons)
 - React Hook Form + Yup
 
 ## Recent Changes
+- Added shadcn/ui component library with Tailwind CSS
 - Added MongoDB/Mongoose integration with connection pooling
 - Removed LAHomes real estate branding
 - Replaced logo images with text-based branding
