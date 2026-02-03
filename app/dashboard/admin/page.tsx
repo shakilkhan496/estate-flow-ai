@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Save, Shield, Flag, Tag, Users, Briefcase, Send } from 'lucide-react';
+import { Plus, X, Save, Shield, Flag, Tag, Users, Briefcase, Send, Tags } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { selectIsAdmin, selectIsAuthLoading } from '@/store/selectors/authSelectors';
 
@@ -71,6 +71,15 @@ const defaultSubmissionStatuses: ConfigItem[] = [
   { id: '3', value: 'sent', color: 'bg-blue-100 text-blue-700' },
   { id: '4', value: 'errored', color: 'bg-orange-100 text-orange-700' },
   { id: '5', value: 'pending', color: 'bg-gray-100 text-gray-700' },
+];
+
+const defaultTags: ConfigItem[] = [
+  { id: '1', value: 'Hot Lead', color: 'bg-red-100 text-red-700' },
+  { id: '2', value: 'Returning Client', color: 'bg-blue-100 text-blue-700' },
+  { id: '3', value: 'Referral', color: 'bg-green-100 text-green-700' },
+  { id: '4', value: 'High Value', color: 'bg-purple-100 text-purple-700' },
+  { id: '5', value: 'Follow Up', color: 'bg-yellow-100 text-yellow-700' },
+  { id: '6', value: 'New Business', color: 'bg-orange-100 text-orange-700' },
 ];
 
 const containerVariants = {
@@ -225,6 +234,7 @@ export default function AdminPage() {
   const [originators, setOriginators] = useState<ConfigItem[]>(defaultOriginators);
   const [closers, setClosers] = useState<ConfigItem[]>(defaultClosers);
   const [submissionStatuses, setSubmissionStatuses] = useState<ConfigItem[]>(defaultSubmissionStatuses);
+  const [tags, setTags] = useState<ConfigItem[]>(defaultTags);
   const [saveMessage, setSaveMessage] = useState('');
 
   useEffect(() => {
@@ -367,6 +377,16 @@ export default function AdminPage() {
           icon={Send}
           items={submissionStatuses}
           {...createHandlers(submissionStatuses, setSubmissionStatuses)}
+        />
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <ConfigSection
+          title="Tags"
+          description="Define tags to categorize and label deals"
+          icon={Tags}
+          items={tags}
+          {...createHandlers(tags, setTags)}
         />
       </motion.div>
     </motion.div>
