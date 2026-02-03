@@ -21,7 +21,8 @@ app/
 │   ├── deals/             # Deals pipeline page
 │   ├── documents/         # Documents management page
 │   ├── team/              # Team management page
-│   └── settings/          # Settings page
+│   ├── settings/          # Settings page
+│   └── admin/             # Super Admin settings (Admin only)
 ├── globals.css
 ├── layout.tsx             # Root layout with Redux Provider
 └── page.tsx               # Landing page
@@ -67,10 +68,11 @@ src/
 
 ## Dashboard Pages
 - **Dashboard** - Overview with stats and recent deals
-- **Deals** - Deal pipeline with filtering and search
+- **Deals** - Deal pipeline with full table view (Company, Deal ID, Status, Flags, DBA, Owner, Phone, Email, Products, Notes, Originators, Closers, Date Created/Updated, GURL, Max Offer, Monthly Rev)
 - **Documents** - Document management with file listings
 - **Team** - Team member cards with stats (Admin/Manager only)
 - **Settings** - Account, notifications, security settings
+- **Super Admin** - Configure deal statuses, flags, products, originators, closers (Admin only)
 
 ## Environment Variables
 - `MONGODB_URI` - MongoDB connection string
@@ -87,8 +89,10 @@ npm run start    # Production server
 - Added Framer Motion for smooth animations
 - Created animated sidebar with mobile hamburger menu
 - Built responsive dashboard layout
-- Created Deals page with sample pipeline data
+- Created Deals page with full table view matching MCA CRM standards
 - Created Documents page with file management
 - Created Team page with member cards
 - Created Settings page with account options
+- Added Super Admin page for configuring deal options (statuses, flags, products, originators, closers)
+- Sidebar state persists via localStorage
 - All pages are fully mobile responsive

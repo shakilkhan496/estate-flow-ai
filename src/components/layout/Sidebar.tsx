@@ -16,11 +16,12 @@ import {
   TrendingUp,
   ChevronLeft,
   ChevronRight,
+  Shield,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectUser, selectIsManagerOrAbove } from '@/store/selectors/authSelectors';
+import { selectUser, selectIsManagerOrAbove, selectIsAdmin } from '@/store/selectors/authSelectors';
 import { logoutUser } from '@/store/actions/authActions';
 import { selectSidebarOpen } from '@/store/selectors/uiSelectors';
 import { toggleSidebar, setSidebarOpen } from '@/store/slices/uiSlice';
@@ -31,6 +32,7 @@ const menuItems = [
   { name: 'Documents', href: '/dashboard/documents', icon: FolderOpen },
   { name: 'Team', href: '/dashboard/team', icon: Users, requiresManager: true },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: 'Super Admin', href: '/dashboard/admin', icon: Shield, requiresAdmin: true },
 ];
 
 export default function Sidebar() {
@@ -38,6 +40,7 @@ export default function Sidebar() {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
   const isManagerOrAbove = useAppSelector(selectIsManagerOrAbove);
+  const isAdmin = useAppSelector(selectIsAdmin);
   const isOpen = useAppSelector(selectSidebarOpen);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -60,7 +63,11 @@ export default function Sidebar() {
   };
 
   const filteredMenuItems = menuItems.filter(
-    (item) => !item.requiresManager || isManagerOrAbove
+    (item) => {
+      if (item.requiresAdmin && !isAdmin) return false;
+      if (item.requiresManager && !isManagerOrAbove) return false;
+      return true;
+    }
   );
 
   const sidebarVariants = {
