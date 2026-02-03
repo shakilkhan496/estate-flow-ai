@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  Kanban,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ import { toggleSidebar, setSidebarOpen } from '@/store/slices/uiSlice';
 
 const menuItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Pipeline', href: '/dashboard/pipeline', icon: Kanban },
   { name: 'Deals', href: '/dashboard/deals', icon: TrendingUp },
   { name: 'Documents', href: '/dashboard/documents', icon: FolderOpen },
   { name: 'Team', href: '/dashboard/team', icon: Users, requiresManager: true },

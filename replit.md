@@ -18,7 +18,8 @@ app/
 ├── dashboard/             # Protected dashboard pages
 │   ├── page.tsx           # Dashboard home
 │   ├── layout.tsx         # Dashboard layout with sidebar
-│   ├── deals/             # Deals pipeline page
+│   ├── pipeline/          # Kanban pipeline view
+│   ├── deals/             # Deals table view
 │   ├── documents/         # Documents management page
 │   ├── team/              # Team management page
 │   ├── settings/          # Settings page
@@ -68,7 +69,8 @@ src/
 
 ## Dashboard Pages
 - **Dashboard** - Overview with stats and recent deals
-- **Deals** - Deal pipeline with full table view (Company, Deal ID, Status, Flags, DBA, Owner, Phone, Email, Products, Notes, Originators, Closers, Date Created/Updated, GURL, Max Offer, Monthly Rev)
+- **Pipeline** - Kanban board view with 15 stages (New Application, Missing Documents, Ready to Submit, Submitted, Resubmitting, Approved, Offer Selected, Offer Pitched, Repricing, Offer Accepted, Received DL/VC, Contracts Requested, Contracts Sent, Contracts Signed, Final Review). Drag-and-drop deals between stages.
+- **Deals** - Deal table view with full columns (Company, Deal ID, Status, Flags, DBA, Owner, Phone, Email, Products, Notes, Originators, Closers, Date Created/Updated, GURL, Max Offer, Monthly Rev, Owners count)
 - **Documents** - Document management with file listings
 - **Team** - Team member cards with stats (Admin/Manager only)
 - **Settings** - Account, notifications, security settings
