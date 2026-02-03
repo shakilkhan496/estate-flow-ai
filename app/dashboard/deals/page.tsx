@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { Plus, Search, Download, Upload, MoreVertical } from 'lucide-react';
+import { Plus, Search, Download, Upload, MoreVertical, Check, X } from 'lucide-react';
 
 interface Deal {
   id: number;
@@ -31,7 +31,7 @@ interface Deal {
   closer: string;
 }
 
-const sampleDeals: Deal[] = [
+const initialDeals: Deal[] = [
   {
     id: 1,
     dealId: 'M4763',
@@ -208,95 +208,10 @@ const sampleDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
   },
-  {
-    id: 9,
-    dealId: 'N30178',
-    company: 'KNA Enterprises LLC',
-    dba: '',
-    status: 'Approved',
-    flags: ['Awaiting Additional Documents'],
-    owner: 'Abdur Kronovetter',
-    phone: '',
-    email: '',
-    products: '',
-    notes: '',
-    originators: '',
-    closers: '15',
-    dateCreated: '9 days ago',
-    dateUpdated: '',
-    gurl: 0,
-    maxOffer: null,
-    monthlyRev: 106326.72,
-    originator: 'Main Wills',
-    closer: '',
-  },
-  {
-    id: 10,
-    dealId: '800008',
-    company: 'Jon Fox Custom Homes LLC',
-    dba: '',
-    status: 'Approved',
-    flags: ['Awaiting Additional Documents'],
-    owner: 'James Fox',
-    phone: '(386) 312-8794',
-    email: 'jamesfox@gmail.com',
-    products: '',
-    notes: '',
-    originators: '',
-    closers: '0',
-    dateCreated: '9 days ago',
-    dateUpdated: '',
-    gurl: 10,
-    maxOffer: 189500.00,
-    monthlyRev: 968459.08,
-    originator: 'Main Wills',
-    closer: '',
-  },
-  {
-    id: 11,
-    dealId: 'P88578',
-    company: 'Advanced Tactical Solutions LLC',
-    dba: '',
-    status: 'Ready to Submit',
-    flags: ['Awaiting Additional Documents'],
-    owner: 'Faisal Khan',
-    phone: '',
-    email: '',
-    products: '',
-    notes: '',
-    originators: '',
-    closers: '0',
-    dateCreated: '11 days ago',
-    dateUpdated: '',
-    gurl: 0,
-    maxOffer: null,
-    monthlyRev: 74363.93,
-    originator: 'Main Wills',
-    closer: '',
-  },
-  {
-    id: 12,
-    dealId: 'R83010',
-    company: 'TRUCKING POWER LLC',
-    dba: '',
-    status: 'Declined',
-    flags: ['Awaiting Additional Documents'],
-    owner: 'Jorge Aragon',
-    phone: '(214) 412-5234',
-    email: 'jorge.aragon@trucking.com',
-    products: '',
-    notes: '',
-    originators: '',
-    closers: '0',
-    dateCreated: '13 days ago',
-    dateUpdated: '',
-    gurl: 0,
-    maxOffer: null,
-    monthlyRev: 532091.25,
-    originator: 'Main Wills',
-    closer: '',
-  },
 ];
+
+const statusOptionsList = ['Ready to Submit', 'Pending', 'Processing', 'Approved', 'Funded', 'Declined', 'Withdrawn'];
+const flagOptionsList = ['Awaiting Additional Documents', 'Stiplisted', 'Priority', 'VIP Client', 'Needs Review'];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -313,7 +228,13 @@ const flagOptions = ['All', 'Awaiting Additional Documents', 'Stiplisted', 'Prio
 const originatorOptions = ['All', 'Main Wills', 'Sarah Johnson', 'Mike Chen'];
 const closerOptions = ['All', 'Tom Brown', 'Lisa Wong', 'David Miller'];
 
+type EditingField = {
+  dealId: number;
+  field: string;
+} | null;
+
 export default function DealsPage() {
+  const [deals, setDeals] = useState<Deal[]>(initialDeals);
   const [searchQuery, setSearchQuery] = useState('');
   const [dealIdFilter, setDealIdFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -321,8 +242,11 @@ export default function DealsPage() {
   const [ownerFilter, setOwnerFilter] = useState('');
   const [originatorFilter, setOriginatorFilter] = useState('All');
   const [closerFilter, setCloserFilter] = useState('All');
+  
+  const [editing, setEditing] = useState<EditingField>(null);
+  const [editValue, setEditValue] = useState('');
 
-  const filteredDeals = sampleDeals.filter((deal) => {
+  const filteredDeals = deals.filter((deal) => {
     const matchesSearch = !searchQuery || 
       deal.company.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDealId = !dealIdFilter || 
@@ -361,12 +285,101 @@ export default function DealsPage() {
     if (flag.toLowerCase().includes('stip')) {
       return 'bg-purple-100 text-purple-800 border-purple-300';
     }
+    if (flag.toLowerCase().includes('priority')) {
+      return 'bg-red-100 text-red-800 border-red-300';
+    }
+    if (flag.toLowerCase().includes('vip')) {
+      return 'bg-blue-100 text-blue-800 border-blue-300';
+    }
     return 'bg-gray-100 text-gray-700 border-gray-300';
   };
 
   const formatCurrency = (value: number | null) => {
     if (value === null) return '-';
     return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const startEditing = (dealId: number, field: string, currentValue: string) => {
+    setEditing({ dealId, field });
+    setEditValue(currentValue);
+  };
+
+  const cancelEditing = () => {
+    setEditing(null);
+    setEditValue('');
+  };
+
+  const saveEdit = () => {
+    if (!editing) return;
+    
+    setDeals(deals.map(deal => {
+      if (deal.id === editing.dealId) {
+        return { ...deal, [editing.field]: editValue };
+      }
+      return deal;
+    }));
+    setEditing(null);
+    setEditValue('');
+  };
+
+  const updateDealField = (dealId: number, field: string, value: string | string[]) => {
+    setDeals(deals.map(deal => {
+      if (deal.id === dealId) {
+        return { ...deal, [field]: value };
+      }
+      return deal;
+    }));
+  };
+
+  const toggleFlag = (dealId: number, flag: string) => {
+    setDeals(deals.map(deal => {
+      if (deal.id === dealId) {
+        const hasFlag = deal.flags.includes(flag);
+        const newFlags = hasFlag 
+          ? deal.flags.filter(f => f !== flag)
+          : [...deal.flags, flag];
+        return { ...deal, flags: newFlags };
+      }
+      return deal;
+    }));
+  };
+
+  const isEditing = (dealId: number, field: string) => {
+    return editing?.dealId === dealId && editing?.field === field;
+  };
+
+  const renderEditableCell = (deal: Deal, field: keyof Deal, displayValue: string) => {
+    if (isEditing(deal.id, field)) {
+      return (
+        <div className="flex items-center gap-1">
+          <Input
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="h-7 text-sm w-32"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveEdit();
+              if (e.key === 'Escape') cancelEditing();
+            }}
+          />
+          <button onClick={saveEdit} className="text-green-600 hover:text-green-700 cursor-pointer">
+            <Check className="w-4 h-4" />
+          </button>
+          <button onClick={cancelEditing} className="text-red-600 hover:text-red-700 cursor-pointer">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      );
+    }
+    return (
+      <span
+        onClick={() => startEditing(deal.id, field, String(deal[field] || ''))}
+        className="cursor-pointer hover:bg-blue-50 hover:text-blue-600 px-1 py-0.5 rounded transition-colors"
+        title="Click to edit"
+      >
+        {displayValue || '-'}
+      </span>
+    );
   };
 
   return (
@@ -496,41 +509,88 @@ export default function DealsPage() {
                   variants={itemVariants}
                   className={`border-b hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
                 >
-                  <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap max-w-[200px] truncate">
-                    {deal.company}
+                  <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap max-w-[200px]">
+                    {renderEditableCell(deal, 'company', deal.company)}
                   </td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.dealId}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(deal.status)}`}>
-                      {deal.status}
-                    </span>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    {renderEditableCell(deal, 'dealId', deal.dealId)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex gap-1">
+                    <select
+                      value={deal.status}
+                      onChange={(e) => updateDealField(deal.id, 'status', e.target.value)}
+                      className={`px-2 py-1 text-xs font-medium rounded border-0 cursor-pointer ${getStatusColor(deal.status)}`}
+                    >
+                      {statusOptionsList.map((opt) => (
+                        <option key={opt} value={opt} className="bg-white text-gray-900">{opt}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="flex items-center gap-1">
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            toggleFlag(deal.id, e.target.value);
+                          }
+                        }}
+                        className="h-6 px-1 text-xs border rounded bg-white cursor-pointer"
+                      >
+                        <option value="">+ Flag</option>
+                        {flagOptionsList.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
                       {deal.flags.map((flag, i) => (
-                        <Badge key={i} variant="outline" className={`text-xs ${getFlagColor(flag)}`}>
+                        <Badge 
+                          key={i} 
+                          variant="outline" 
+                          className={`text-xs cursor-pointer hover:opacity-70 ${getFlagColor(flag)}`}
+                          onClick={() => toggleFlag(deal.id, flag)}
+                          title="Click to remove"
+                        >
                           {flag}
+                          <X className="w-3 h-3 ml-1" />
                         </Badge>
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.dba || '-'}</td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.owner}</td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.phone || '-'}</td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap max-w-[180px] truncate">
-                    {deal.email || '-'}
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    {renderEditableCell(deal, 'dba', deal.dba)}
                   </td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.products || '-'}</td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.notes || '-'}</td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.originators || '-'}</td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.closers}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    {renderEditableCell(deal, 'owner', deal.owner)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    {renderEditableCell(deal, 'phone', deal.phone)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap max-w-[180px]">
+                    {renderEditableCell(deal, 'email', deal.email)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    {renderEditableCell(deal, 'products', deal.products)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    {renderEditableCell(deal, 'notes', deal.notes)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    {renderEditableCell(deal, 'originators', deal.originators)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    {renderEditableCell(deal, 'closers', deal.closers)}
+                  </td>
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.dateCreated}</td>
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.dateUpdated || '-'}</td>
                   <td className="px-4 py-3 text-gray-600 text-right whitespace-nowrap">{deal.gurl || '-'}</td>
                   <td className="px-4 py-3 text-gray-600 text-right whitespace-nowrap">{formatCurrency(deal.maxOffer)}</td>
                   <td className="px-4 py-3 text-gray-600 text-right whitespace-nowrap">{formatCurrency(deal.monthlyRev)}</td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.originator}</td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.closer || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    {renderEditableCell(deal, 'originator', deal.originator)}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                    {renderEditableCell(deal, 'closer', deal.closer)}
+                  </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
                       <MoreVertical className="w-4 h-4" />
@@ -544,7 +604,7 @@ export default function DealsPage() {
         
         <div className="px-4 py-3 border-t bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-600">
           <div>
-            Showing {filteredDeals.length} of {sampleDeals.length} results
+            Showing {filteredDeals.length} of {deals.length} results
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" disabled className="cursor-pointer">Previous</Button>
