@@ -76,6 +76,9 @@ src/
     - Last activity timestamps on deal cards
     - Stage transition history tracking (records when deals move between stages)
     - Sticky stage headers with synchronized horizontal scrolling
+    - Inline "Next" button to move deals to next stage without dragging
+    - Stage collapsing - click X on stage header to collapse, click collapsed stage to expand
+    - "Hide All Stages" / "Show All Stages" buttons for quick bulk collapse/expand
 - **Documents** - Document management with file listings
 - **Team** - Team member cards with stats (Admin/Manager only)
 - **Settings** - Account, notifications, security settings

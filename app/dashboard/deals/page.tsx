@@ -700,10 +700,12 @@ interface DealCardProps {
   deal: Deal;
   onDragStart: (e: React.DragEvent, deal: Deal) => void;
   onEdit: (deal: Deal) => void;
+  onMoveToNextStage: (deal: Deal) => void;
   isCompact: boolean;
+  isLastStage: boolean;
 }
 
-function DealCard({ deal, onDragStart, onEdit, isCompact }: DealCardProps) {
+function DealCard({ deal, onDragStart, onEdit, onMoveToNextStage, isCompact, isLastStage }: DealCardProps) {
   const [showHistory, setShowHistory] = useState(false);
   
   const formatAmount = (value: number | null) => {
@@ -721,16 +723,27 @@ function DealCard({ deal, onDragStart, onEdit, isCompact }: DealCardProps) {
         whileHover="hover"
         draggable
         onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, deal)}
-        className="bg-white border rounded-lg px-3 py-2 cursor-grab active:cursor-grabbing shadow-sm hover:shadow-md transition-shadow"
+        className="bg-white border rounded-lg px-3 py-2 cursor-grab active:cursor-grabbing shadow-sm hover:shadow-md transition-shadow group"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h4 className="font-medium text-gray-900 text-sm truncate flex-1" title={deal.company}>
             {deal.company}
           </h4>
           {deal.maxOffer !== null && deal.maxOffer > 0 && (
-            <span className="text-xs font-semibold text-green-600 ml-2">
+            <span className="text-xs font-semibold text-green-600">
               {formatAmount(deal.maxOffer)}
             </span>
+          )}
+          {!isLastStage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shrink-0"
+              onClick={(e) => { e.stopPropagation(); onMoveToNextStage(deal); }}
+              title="Move to next stage"
+            >
+              <ChevronRight className="w-4 h-4 text-blue-600" />
+            </Button>
           )}
         </div>
       </motion.div>
@@ -758,14 +771,27 @@ function DealCard({ deal, onDragStart, onEdit, isCompact }: DealCardProps) {
             </p>
           )}
         </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-6 w-6 p-0 cursor-pointer shrink-0"
-          onClick={(e) => { e.stopPropagation(); onEdit(deal); }}
-        >
-          <MoreHorizontal className="w-4 h-4 text-gray-400" />
-        </Button>
+        <div className="flex items-center gap-1 shrink-0">
+          {!isLastStage && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 px-2 cursor-pointer text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+              onClick={(e) => { e.stopPropagation(); onMoveToNextStage(deal); }}
+              title="Move to next stage"
+            >
+              Next <ChevronRight className="w-3 h-3 ml-0.5" />
+            </Button>
+          )}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-6 w-6 p-0 cursor-pointer"
+            onClick={(e) => { e.stopPropagation(); onEdit(deal); }}
+          >
+            <MoreHorizontal className="w-4 h-4 text-gray-400" />
+          </Button>
+        </div>
       </div>
       <div className="flex items-center gap-2 text-xs text-gray-500">
         <User className="w-3 h-3" />
@@ -821,11 +847,13 @@ interface PipelineColumnProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, stageId: string) => void;
   onEdit: (deal: Deal) => void;
+  onMoveToNextStage: (deal: Deal) => void;
   totalAmount: number;
   isCompact: boolean;
+  isLastStage: boolean;
 }
 
-function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit, totalAmount, isCompact }: PipelineColumnProps) {
+function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit, onMoveToNextStage, totalAmount, isCompact, isLastStage }: PipelineColumnProps) {
   const formatAmount = (value: number) => {
     if (value === 0) return null;
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
@@ -840,7 +868,15 @@ function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit,
       <div className="p-2 space-y-2">
         <AnimatePresence>
           {deals.map((deal) => (
-            <DealCard key={deal.id} deal={deal} onDragStart={onDragStart} onEdit={onEdit} isCompact={isCompact} />
+            <DealCard 
+              key={deal.id} 
+              deal={deal} 
+              onDragStart={onDragStart} 
+              onEdit={onEdit} 
+              onMoveToNextStage={onMoveToNextStage}
+              isCompact={isCompact}
+              isLastStage={isLastStage}
+            />
           ))}
         </AnimatePresence>
         {deals.length === 0 && (
@@ -1300,6 +1336,27 @@ export default function DealsPage() {
   const [viewMode, setViewMode] = useState<'table' | 'pipeline'>('table');
   const [isCompactView, setIsCompactView] = useState(false);
   const [draggedDeal, setDraggedDeal] = useState<Deal | null>(null);
+  const [collapsedStages, setCollapsedStages] = useState<Set<string>>(new Set());
+  
+  const toggleStageCollapse = (stageId: string) => {
+    setCollapsedStages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stageId)) {
+        newSet.delete(stageId);
+      } else {
+        newSet.add(stageId);
+      }
+      return newSet;
+    });
+  };
+  
+  const collapseAllStages = () => {
+    setCollapsedStages(new Set(pipelineStages.map(s => s.id)));
+  };
+  
+  const expandAllStages = () => {
+    setCollapsedStages(new Set());
+  };
 
   const filteredDeals = deals.filter((deal) => {
     const matchesSearch = !searchQuery || 
@@ -1444,6 +1501,34 @@ export default function DealsPage() {
         ));
       }
       setDraggedDeal(null);
+    }
+  };
+  
+  const handleMoveToNextStage = (deal: Deal) => {
+    const currentStageId = getStageFromStatus(deal.status);
+    const currentIndex = pipelineStages.findIndex(s => s.id === currentStageId);
+    
+    if (currentIndex < pipelineStages.length - 1) {
+      const nextStage = pipelineStages[currentIndex + 1];
+      const newStatus = nextStage.name;
+      const oldStatus = deal.status;
+      
+      const newTransition: StageTransition = {
+        fromStage: oldStatus,
+        toStage: newStatus,
+        timestamp: 'Just now'
+      };
+      
+      setDeals(prev => prev.map(d => 
+        d.id === deal.id 
+          ? { 
+              ...d, 
+              status: newStatus,
+              lastActivity: 'Just now',
+              stageHistory: [newTransition, ...d.stageHistory]
+            } 
+          : d
+      ));
     }
   };
 
@@ -1647,28 +1732,39 @@ export default function DealsPage() {
           animate="visible"
           className="bg-white border rounded-lg"
         >
-          <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b">
+          <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b flex-wrap gap-2">
             <p className="text-sm text-gray-500">
               {isCompactView ? 'Compact View' : 'Expanded View'} - Showing {filteredDeals.length} deals
+              {collapsedStages.size > 0 && ` (${collapsedStages.size} stages hidden)`}
             </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCompactView(!isCompactView)}
-              className="h-8 px-3 cursor-pointer flex items-center gap-2"
-            >
-              {isCompactView ? (
-                <>
-                  <Maximize2 className="w-4 h-4" />
-                  <span>Expand Cards</span>
-                </>
-              ) : (
-                <>
-                  <Minimize2 className="w-4 h-4" />
-                  <span>Compact Cards</span>
-                </>
-              )}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={collapsedStages.size === pipelineStages.length ? expandAllStages : collapseAllStages}
+                className="h-8 px-3 cursor-pointer text-xs text-gray-600"
+              >
+                {collapsedStages.size === pipelineStages.length ? 'Show All Stages' : 'Hide All Stages'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsCompactView(!isCompactView)}
+                className="h-8 px-3 cursor-pointer flex items-center gap-2"
+              >
+                {isCompactView ? (
+                  <>
+                    <Maximize2 className="w-4 h-4" />
+                    <span>Expand Cards</span>
+                  </>
+                ) : (
+                  <>
+                    <Minimize2 className="w-4 h-4" />
+                    <span>Compact Cards</span>
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
           <div 
             id="pipeline-header"
@@ -1682,10 +1778,29 @@ export default function DealsPage() {
             {pipelineStages.map((stage) => {
               const stageDeals = getDealsByStage(stage.id);
               const stageTotal = getStageTotal(stage.id);
+              const isCollapsed = collapsedStages.has(stage.id);
               const formatAmount = (value: number) => {
                 if (value === 0) return null;
                 return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
               };
+              
+              if (isCollapsed) {
+                return (
+                  <div 
+                    key={stage.id} 
+                    className="flex-shrink-0 w-[50px] p-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors flex flex-col items-center justify-center"
+                    onClick={() => toggleStageCollapse(stage.id)}
+                    title={`${stage.name} (${stageDeals.length} deals) - Click to expand`}
+                  >
+                    <div className={`w-2 h-2 rounded-full ${stage.color} mb-1`} />
+                    <Badge variant="secondary" className="text-xs">
+                      {stageDeals.length}
+                    </Badge>
+                    <ChevronRight className="w-3 h-3 text-gray-400 mt-1" />
+                  </div>
+                );
+              }
+              
               return (
                 <div key={stage.id} className="flex-shrink-0 w-[260px] p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between mb-1">
@@ -1693,9 +1808,18 @@ export default function DealsPage() {
                       <div className={`w-2 h-2 rounded-full ${stage.color}`} />
                       <h3 className="font-medium text-gray-900 text-sm">{stage.name}</h3>
                     </div>
-                    <Badge variant="secondary" className="text-xs">
-                      {stageDeals.length}
-                    </Badge>
+                    <div className="flex items-center gap-1">
+                      <Badge variant="secondary" className="text-xs">
+                        {stageDeals.length}
+                      </Badge>
+                      <button
+                        onClick={() => toggleStageCollapse(stage.id)}
+                        className="p-0.5 hover:bg-gray-200 rounded cursor-pointer"
+                        title="Collapse this stage"
+                      >
+                        <X className="w-3 h-3 text-gray-400" />
+                      </button>
+                    </div>
                   </div>
                   {stageTotal > 0 && (
                     <p className="text-xs text-gray-500">{formatAmount(stageTotal)}</p>
@@ -1732,19 +1856,44 @@ export default function DealsPage() {
                 if (header) header.scrollLeft = e.currentTarget.scrollLeft;
               }}
             >
-              {pipelineStages.map((stage) => (
-                <PipelineColumn
-                  key={stage.id}
-                  stage={stage}
-                  deals={getDealsByStage(stage.id)}
-                  onDragStart={handleDragStart}
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onEdit={(deal) => setEditingDeal(deal)}
-                  totalAmount={getStageTotal(stage.id)}
-                  isCompact={isCompactView}
-                />
-              ))}
+              {pipelineStages.map((stage, index) => {
+                const isCollapsed = collapsedStages.has(stage.id);
+                const isLastStage = index === pipelineStages.length - 1;
+                
+                if (isCollapsed) {
+                  return (
+                    <div 
+                      key={stage.id}
+                      className="flex-shrink-0 w-[50px] bg-gray-100 rounded-lg min-h-[150px] flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
+                      onClick={() => toggleStageCollapse(stage.id)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, stage.id)}
+                      title={`${stage.name} - Click to expand`}
+                    >
+                      <div className="flex flex-col items-center gap-1">
+                        <div className={`w-2 h-2 rounded-full ${stage.color}`} />
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                      </div>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <PipelineColumn
+                    key={stage.id}
+                    stage={stage}
+                    deals={getDealsByStage(stage.id)}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onEdit={(deal) => setEditingDeal(deal)}
+                    onMoveToNextStage={handleMoveToNextStage}
+                    totalAmount={getStageTotal(stage.id)}
+                    isCompact={isCompactView}
+                    isLastStage={isLastStage}
+                  />
+                );
+              })}
             </div>
           </div>
         </motion.div>
