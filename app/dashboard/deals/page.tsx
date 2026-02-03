@@ -369,11 +369,11 @@ function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit,
 
   return (
     <div 
-      className="flex-shrink-0 w-[280px] bg-gray-50 rounded-lg flex flex-col max-h-full"
+      className="flex-shrink-0 w-[280px] bg-gray-50 rounded-lg flex flex-col h-full"
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, stage.id)}
     >
-      <div className="p-3 border-b bg-white rounded-t-lg">
+      <div className="p-3 border-b bg-white rounded-t-lg sticky top-0 z-10">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${stage.color}`} />
@@ -387,7 +387,7 @@ function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit,
           <p className="text-xs text-gray-500">{formatAmount(totalAmount)}</p>
         )}
       </div>
-      <div className="flex-1 overflow-y-auto p-2 space-y-2 min-h-[200px]">
+      <div className="flex-1 p-2 space-y-2">
         <AnimatePresence>
           {deals.map((deal) => (
             <DealCard key={deal.id} deal={deal} onDragStart={onDragStart} onEdit={onEdit} />
@@ -1164,12 +1164,12 @@ export default function DealsPage() {
       </motion.div>
 
       {viewMode === 'pipeline' ? (
-        <motion.div variants={itemVariants} className="flex-1 relative bg-white border rounded-lg overflow-hidden" style={{ minHeight: '500px' }}>
+        <motion.div variants={itemVariants} className="relative bg-white border rounded-lg overflow-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={scrollLeft}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
+            className="fixed left-[280px] top-1/2 -translate-y-1/2 z-20 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -1177,14 +1177,14 @@ export default function DealsPage() {
             variant="outline"
             size="sm"
             onClick={scrollRight}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
+            className="fixed right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
           >
             <ChevronRight className="w-5 h-5" />
           </Button>
 
           <div 
             id="pipeline-container"
-            className="flex gap-3 p-4 overflow-x-auto h-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+            className="flex gap-3 p-4 overflow-x-auto"
             style={{ scrollBehavior: 'smooth' }}
           >
             {pipelineStages.map((stage) => (
