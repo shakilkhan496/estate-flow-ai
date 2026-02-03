@@ -2,108 +2,365 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Filter, MoreVertical, Building2, DollarSign, Calendar, User } from 'lucide-react';
+import { Plus, Search, Filter, Download, Upload, MoreVertical } from 'lucide-react';
 
-const sampleDeals = [
+interface Deal {
+  id: number;
+  dealId: string;
+  company: string;
+  dba: string;
+  status: string;
+  flags: string[];
+  owner: string;
+  phone: string;
+  email: string;
+  products: string;
+  notes: string;
+  originators: string;
+  closers: string;
+  dateCreated: string;
+  dateUpdated: string;
+  gurl: number;
+  maxOffer: number | null;
+  monthlyRev: number | null;
+  originator: string;
+  closer: string;
+}
+
+const sampleDeals: Deal[] = [
   {
     id: 1,
-    businessName: 'Acme Restaurant LLC',
-    ownerName: 'John Smith',
-    requestedAmount: 75000,
-    status: 'Funded',
-    stage: 'Closed',
-    createdAt: '2025-01-15',
-    broker: 'Sarah Johnson',
+    dealId: 'M4763',
+    company: 'BLACK RHINO ENERGY SERVICES INC',
+    dba: '',
+    status: 'Declined',
+    flags: ['Stiplisted'],
+    owner: 'Cesar Carmen',
+    phone: '',
+    email: '',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '0',
+    dateCreated: '23 hours ago',
+    dateUpdated: '',
+    gurl: 0,
+    maxOffer: null,
+    monthlyRev: 843173.00,
+    originator: 'Main Wills',
+    closer: '',
   },
   {
     id: 2,
-    businessName: 'Quick Mart Inc',
-    ownerName: 'Maria Garcia',
-    requestedAmount: 45000,
-    status: 'Pending',
-    stage: 'Underwriting',
-    createdAt: '2025-01-20',
-    broker: 'Mike Wilson',
+    dealId: 'M4700',
+    company: 'BLACK RHINO ENERGY SERVICES INC',
+    dba: '',
+    status: 'Ready to Submit',
+    flags: ['Awaiting Additional Documents'],
+    owner: 'Cesar Carmen',
+    phone: '',
+    email: '',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '0',
+    dateCreated: '23 hours ago',
+    dateUpdated: '',
+    gurl: 0,
+    maxOffer: null,
+    monthlyRev: 843727.00,
+    originator: 'Main Wills',
+    closer: '',
   },
   {
     id: 3,
-    businessName: 'City Auto Repair',
-    ownerName: 'David Lee',
-    requestedAmount: 120000,
-    status: 'Under Review',
-    stage: 'Documents',
-    createdAt: '2025-01-22',
-    broker: 'Sarah Johnson',
+    dealId: 'N33444',
+    company: 'Fulcrum Markets Dispute Resolution Clinic',
+    dba: '',
+    status: 'Approved',
+    flags: [],
+    owner: 'John Hazard',
+    phone: '',
+    email: '',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '0',
+    dateCreated: '4 days ago',
+    dateUpdated: '',
+    gurl: 0,
+    maxOffer: null,
+    monthlyRev: 805471.04,
+    originator: 'Main Wills',
+    closer: '',
   },
   {
     id: 4,
-    businessName: 'Downtown Fitness',
-    ownerName: 'Emily Chen',
-    requestedAmount: 85000,
-    status: 'Documents Needed',
-    stage: 'Application',
-    createdAt: '2025-01-25',
-    broker: 'Tom Brown',
+    dealId: 'N33483',
+    company: 'MCKINLEY BLOCKS LLC',
+    dba: '',
+    status: 'Ready to Submit',
+    flags: ['Awaiting Additional Documents'],
+    owner: 'Brandon Vill',
+    phone: '',
+    email: '',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '0',
+    dateCreated: '5 days ago',
+    dateUpdated: '',
+    gurl: 0,
+    maxOffer: null,
+    monthlyRev: 801887.75,
+    originator: 'Main Wills',
+    closer: '',
   },
   {
     id: 5,
-    businessName: 'Tech Solutions Pro',
-    ownerName: 'James Wilson',
-    requestedAmount: 200000,
+    dealId: 'N42451',
+    company: 'DEV LLC',
+    dba: '',
     status: 'Approved',
-    stage: 'Offer',
-    createdAt: '2025-01-26',
-    broker: 'Mike Wilson',
+    flags: ['Awaiting Additional Documents'],
+    owner: 'Thomas McClain',
+    phone: '(977) 448-2742',
+    email: 'thomas.mcclain@dev.com',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '10',
+    dateCreated: '6 days ago',
+    dateUpdated: '',
+    gurl: 0,
+    maxOffer: null,
+    monthlyRev: 336893.73,
+    originator: 'Main Wills',
+    closer: '',
   },
   {
     id: 6,
-    businessName: 'Green Landscaping',
-    ownerName: 'Lisa Anderson',
-    requestedAmount: 35000,
+    dealId: 'N12418',
+    company: 'BYC GLOBAL INC',
+    dba: '',
+    status: 'Ready to Submit',
+    flags: ['Awaiting Additional Documents'],
+    owner: 'Stephen Northrup',
+    phone: '',
+    email: '',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '0',
+    dateCreated: '6 days ago',
+    dateUpdated: '',
+    gurl: 0,
+    maxOffer: null,
+    monthlyRev: 471202.17,
+    originator: 'Main Wills',
+    closer: '',
+  },
+  {
+    id: 7,
+    dealId: 'N12084',
+    company: 'allan gilbert builders',
+    dba: '',
+    status: 'Processing',
+    flags: ['Awaiting Additional Documents'],
+    owner: 'Allan gilbert',
+    phone: '(202) 394-1181',
+    email: 'agilbert@builders.com',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '0',
+    dateCreated: '6 days ago',
+    dateUpdated: '',
+    gurl: 0,
+    maxOffer: null,
+    monthlyRev: 382900.00,
+    originator: 'Main Wills',
+    closer: '',
+  },
+  {
+    id: 8,
+    dealId: 'N52130',
+    company: 'Move The Nine Inc',
+    dba: '',
+    status: 'Withdrawn',
+    flags: ['Awaiting Additional Documents'],
+    owner: 'Lisa Taggart',
+    phone: '(943) 278-9844',
+    email: 'ltaggart@email.com',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '0',
+    dateCreated: '8 days ago',
+    dateUpdated: '',
+    gurl: 7,
+    maxOffer: 193820.00,
+    monthlyRev: 644882.21,
+    originator: 'Main Wills',
+    closer: '',
+  },
+  {
+    id: 9,
+    dealId: 'N30178',
+    company: 'KNA Enterprises LLC',
+    dba: '',
+    status: 'Approved',
+    flags: ['Awaiting Additional Documents'],
+    owner: 'Abdur Kronovetter',
+    phone: '',
+    email: '',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '15',
+    dateCreated: '9 days ago',
+    dateUpdated: '',
+    gurl: 0,
+    maxOffer: null,
+    monthlyRev: 106326.72,
+    originator: 'Main Wills',
+    closer: '',
+  },
+  {
+    id: 10,
+    dealId: '800008',
+    company: 'Jon Fox Custom Homes LLC',
+    dba: '',
+    status: 'Approved',
+    flags: ['Awaiting Additional Documents'],
+    owner: 'James Fox',
+    phone: '(386) 312-8794',
+    email: 'jamesfox@gmail.com',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '0',
+    dateCreated: '9 days ago',
+    dateUpdated: '',
+    gurl: 10,
+    maxOffer: 189500.00,
+    monthlyRev: 968459.08,
+    originator: 'Main Wills',
+    closer: '',
+  },
+  {
+    id: 11,
+    dealId: 'P88578',
+    company: 'Advanced Tactical Solutions LLC',
+    dba: '',
+    status: 'Ready to Submit',
+    flags: ['Awaiting Additional Documents'],
+    owner: 'Faisal Khan',
+    phone: '',
+    email: '',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '0',
+    dateCreated: '11 days ago',
+    dateUpdated: '',
+    gurl: 0,
+    maxOffer: null,
+    monthlyRev: 74363.93,
+    originator: 'Main Wills',
+    closer: '',
+  },
+  {
+    id: 12,
+    dealId: 'R83010',
+    company: 'TRUCKING POWER LLC',
+    dba: '',
     status: 'Declined',
-    stage: 'Closed',
-    createdAt: '2025-01-10',
-    broker: 'Sarah Johnson',
+    flags: ['Awaiting Additional Documents'],
+    owner: 'Jorge Aragon',
+    phone: '(214) 412-5234',
+    email: 'jorge.aragon@trucking.com',
+    products: '',
+    notes: '',
+    originators: '',
+    closers: '0',
+    dateCreated: '13 days ago',
+    dateUpdated: '',
+    gurl: 0,
+    maxOffer: null,
+    monthlyRev: 532091.25,
+    originator: 'Main Wills',
+    closer: '',
   },
 ];
 
-const stages = ['All', 'Application', 'Documents', 'Underwriting', 'Offer', 'Closed'];
+const statusFilters = ['All', 'To Submit', 'Active', 'D+ Funded', 'Closed'];
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.02 } },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 10 },
   visible: { opacity: 1, y: 0 },
 };
 
 export default function DealsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeStage, setActiveStage] = useState('All');
+  const [activeFilter, setActiveFilter] = useState('All');
 
   const filteredDeals = sampleDeals.filter((deal) => {
-    const matchesSearch = deal.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      deal.ownerName.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStage = activeStage === 'All' || deal.stage === activeStage;
-    return matchesSearch && matchesStage;
+    const matchesSearch = 
+      deal.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      deal.dealId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      deal.owner.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    let matchesFilter = true;
+    if (activeFilter !== 'All') {
+      if (activeFilter === 'To Submit') {
+        matchesFilter = deal.status.toLowerCase().includes('submit');
+      } else if (activeFilter === 'Active') {
+        matchesFilter = ['approved', 'processing', 'pending'].includes(deal.status.toLowerCase());
+      } else if (activeFilter === 'D+ Funded') {
+        matchesFilter = deal.status.toLowerCase() === 'funded';
+      } else if (activeFilter === 'Closed') {
+        matchesFilter = ['declined', 'withdrawn'].includes(deal.status.toLowerCase());
+      }
+    }
+    
+    return matchesSearch && matchesFilter;
   });
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Funded': return 'bg-green-100 text-green-700';
-      case 'Approved': return 'bg-blue-100 text-blue-700';
-      case 'Pending': return 'bg-yellow-100 text-yellow-700';
-      case 'Under Review': return 'bg-purple-100 text-purple-700';
-      case 'Documents Needed': return 'bg-orange-100 text-orange-700';
-      case 'Declined': return 'bg-red-100 text-red-700';
+    switch (status.toLowerCase()) {
+      case 'funded': return 'bg-green-500 text-white';
+      case 'approved': return 'bg-green-100 text-green-700';
+      case 'ready to submit': return 'bg-blue-100 text-blue-700';
+      case 'pending': 
+      case 'processing': return 'bg-yellow-100 text-yellow-700';
+      case 'declined': return 'bg-red-500 text-white';
+      case 'withdrawn': return 'bg-orange-100 text-orange-700';
       default: return 'bg-gray-100 text-gray-700';
     }
+  };
+
+  const getFlagColor = (flag: string) => {
+    if (flag.toLowerCase().includes('awaiting') || flag.toLowerCase().includes('additional')) {
+      return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+    }
+    if (flag.toLowerCase().includes('stip')) {
+      return 'bg-purple-100 text-purple-800 border-purple-300';
+    }
+    return 'bg-gray-100 text-gray-700 border-gray-300';
+  };
+
+  const formatCurrency = (value: number | null) => {
+    if (value === null) return '-';
+    return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   return (
@@ -111,100 +368,152 @@ export default function DealsPage() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-6"
+      className="space-y-4"
     >
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Deals</h1>
-          <p className="text-gray-500 mt-1">Manage your deal pipeline</p>
+      <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Deals</h1>
         </div>
-        <Button className="w-full sm:w-auto">
-          <Plus className="w-4 h-4 mr-2" />
-          New Deal
-        </Button>
-      </motion.div>
-
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Search deals..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[200px] lg:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-9"
+            />
+          </div>
+          <Button variant="outline" size="sm" className="cursor-pointer">
+            <Filter className="w-4 h-4 mr-1" />
+            Status
+          </Button>
+          <Button variant="outline" size="sm" className="cursor-pointer">
+            <Filter className="w-4 h-4 mr-1" />
+            Flags
+          </Button>
+          <Button variant="outline" size="sm" className="cursor-pointer">
+            <Upload className="w-4 h-4 mr-1" />
+            Import
+          </Button>
+          <Button variant="outline" size="sm" className="cursor-pointer">
+            <Download className="w-4 h-4 mr-1" />
+            Export
+          </Button>
+          <Button size="sm" className="cursor-pointer bg-blue-600 hover:bg-blue-700">
+            <Plus className="w-4 h-4 mr-1" />
+            New deal
+          </Button>
         </div>
-        <Button variant="outline" className="w-full sm:w-auto">
-          <Filter className="w-4 h-4 mr-2" />
-          Filters
-        </Button>
       </motion.div>
 
       <motion.div variants={itemVariants} className="flex gap-2 overflow-x-auto pb-2">
-        {stages.map((stage) => (
+        {statusFilters.map((filter) => (
           <Button
-            key={stage}
-            variant={activeStage === stage ? 'default' : 'outline'}
+            key={filter}
+            variant={activeFilter === filter ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => setActiveStage(stage)}
-            className="whitespace-nowrap"
+            onClick={() => setActiveFilter(filter)}
+            className="whitespace-nowrap cursor-pointer"
           >
-            {stage}
+            {filter}
           </Button>
         ))}
       </motion.div>
 
-      <motion.div variants={containerVariants} className="grid gap-4">
-        {filteredDeals.map((deal) => (
-          <motion.div key={deal.id} variants={itemVariants}>
-            <Card className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start sm:items-center gap-3 mb-2">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Building2 className="w-5 h-5 text-gray-600" />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">{deal.businessName}</h3>
-                        <p className="text-sm text-gray-500">{deal.ownerName}</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <DollarSign className="w-4 h-4 flex-shrink-0" />
-                        <span className="truncate">${deal.requestedAmount.toLocaleString()}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4 flex-shrink-0" />
-                        <span className="truncate">{deal.createdAt}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <User className="w-4 h-4 flex-shrink-0" />
-                        <span className="truncate">{deal.broker}</span>
-                      </div>
-                      <div>
-                        <Badge variant="outline" className="text-xs">{deal.stage}</Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(deal.status)}`}>
+      <motion.div variants={itemVariants} className="bg-white rounded-lg border overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">COMPANY</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">Deal</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">STATUS</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">FLAGS</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">DBA</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">OWNER</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">PHONE</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">EMAIL</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">Products</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">Notes</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">Originators</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">Closers</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">Date Created</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">Date Updated</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-600 whitespace-nowrap">GURL</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-600 whitespace-nowrap">MAX OFFER</th>
+                <th className="text-right px-4 py-3 font-medium text-gray-600 whitespace-nowrap">MONTHLY REV</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">ORIGINATOR</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">CLOSER</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredDeals.map((deal, index) => (
+                <motion.tr
+                  key={deal.id}
+                  variants={itemVariants}
+                  className={`border-b hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+                >
+                  <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap max-w-[200px] truncate">
+                    {deal.company}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.dealId}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-medium rounded ${getStatusColor(deal.status)}`}>
                       {deal.status}
                     </span>
-                    <Button variant="ghost" size="icon" className="hidden sm:flex">
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="flex gap-1">
+                      {deal.flags.map((flag, i) => (
+                        <Badge key={i} variant="outline" className={`text-xs ${getFlagColor(flag)}`}>
+                          {flag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.dba || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.owner}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.phone || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap max-w-[180px] truncate">
+                    {deal.email || '-'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.products || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.notes || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.originators || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.closers}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.dateCreated}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.dateUpdated || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600 text-right whitespace-nowrap">{deal.gurl || '-'}</td>
+                  <td className="px-4 py-3 text-gray-600 text-right whitespace-nowrap">{formatCurrency(deal.maxOffer)}</td>
+                  <td className="px-4 py-3 text-gray-600 text-right whitespace-nowrap">{formatCurrency(deal.monthlyRev)}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.originator}</td>
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{deal.closer || '-'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
                       <MoreVertical className="w-4 h-4" />
                     </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+                  </td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="px-4 py-3 border-t bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-600">
+          <div>
+            Showing {filteredDeals.length} of {sampleDeals.length} results
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" disabled className="cursor-pointer">Previous</Button>
+            <Button variant="outline" size="sm" className="cursor-pointer">Next</Button>
+          </div>
+        </div>
       </motion.div>
 
       {filteredDeals.length === 0 && (
-        <motion.div variants={itemVariants} className="text-center py-12">
+        <motion.div variants={itemVariants} className="text-center py-12 bg-white rounded-lg border">
           <p className="text-gray-500">No deals found matching your criteria.</p>
         </motion.div>
       )}
