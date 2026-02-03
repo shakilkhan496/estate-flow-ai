@@ -1319,16 +1319,24 @@ export default function DealsPage() {
   };
 
   const scrollLeft = () => {
-    const container = document.getElementById('pipeline-container');
+    const container = document.getElementById('pipeline-cards');
+    const header = document.getElementById('pipeline-header');
     if (container) {
       container.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+    if (header) {
+      header.scrollBy({ left: -300, behavior: 'smooth' });
     }
   };
 
   const scrollRight = () => {
-    const container = document.getElementById('pipeline-container');
+    const container = document.getElementById('pipeline-cards');
+    const header = document.getElementById('pipeline-header');
     if (container) {
       container.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+    if (header) {
+      header.scrollBy({ left: 300, behavior: 'smooth' });
     }
   };
 
@@ -1495,30 +1503,19 @@ export default function DealsPage() {
       </motion.div>
 
       {viewMode === 'pipeline' ? (
-        <motion.div variants={itemVariants} className="relative bg-white border rounded-lg">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={scrollLeft}
-            className="fixed left-[280px] top-1/2 -translate-y-1/2 z-20 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
+        <>
+          <motion.div 
+            variants={itemVariants} 
+            className="sticky top-0 z-30 bg-white border border-b-0 rounded-t-lg"
           >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={scrollRight}
-            className="fixed right-4 top-1/2 -translate-y-1/2 z-20 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </Button>
-
-          <div 
-            id="pipeline-container"
-            className="overflow-x-auto"
-            style={{ scrollBehavior: 'smooth' }}
-          >
-            <div className="flex gap-3 p-4 pb-0 sticky top-0 bg-white z-10 border-b">
+            <div 
+              id="pipeline-header"
+              className="flex gap-3 p-4 overflow-x-auto"
+              onScroll={(e) => {
+                const container = document.getElementById('pipeline-cards');
+                if (container) container.scrollLeft = e.currentTarget.scrollLeft;
+              }}
+            >
               {pipelineStages.map((stage) => {
                 const stageDeals = getDealsByStage(stage.id);
                 const stageTotal = getStageTotal(stage.id);
@@ -1527,7 +1524,7 @@ export default function DealsPage() {
                   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
                 };
                 return (
-                  <div key={stage.id} className="flex-shrink-0 w-[280px] p-3 bg-gray-50 rounded-t-lg">
+                  <div key={stage.id} className="flex-shrink-0 w-[280px] p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${stage.color}`} />
@@ -1544,7 +1541,34 @@ export default function DealsPage() {
                 );
               })}
             </div>
-            <div className="flex gap-3 px-4 pb-4">
+          </motion.div>
+          <motion.div variants={itemVariants} className="relative bg-white border border-t-0 rounded-b-lg">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={scrollLeft}
+              className="absolute left-2 top-20 z-20 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={scrollRight}
+              className="absolute right-2 top-20 z-20 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+
+            <div 
+              id="pipeline-cards"
+              className="flex gap-3 p-4 overflow-x-auto"
+              style={{ scrollBehavior: 'smooth' }}
+              onScroll={(e) => {
+                const header = document.getElementById('pipeline-header');
+                if (header) header.scrollLeft = e.currentTarget.scrollLeft;
+              }}
+            >
               {pipelineStages.map((stage) => (
                 <PipelineColumn
                   key={stage.id}
@@ -1558,8 +1582,8 @@ export default function DealsPage() {
                 />
               ))}
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </>
       ) : (
         <motion.div variants={itemVariants} className="bg-white rounded-lg border overflow-hidden">
           <div className="overflow-x-auto">
