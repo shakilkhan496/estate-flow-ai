@@ -480,10 +480,10 @@ export default function DealsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">COMPANY</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">Deal</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">STATUS</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">FLAGS</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[180px] max-w-[180px]">COMPANY</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[80px]">Deal</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[120px]">STATUS</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[200px]">FLAGS</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">DBA</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">OWNER</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">PHONE</th>
@@ -509,13 +509,42 @@ export default function DealsPage() {
                   variants={itemVariants}
                   className={`border-b hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
                 >
-                  <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap max-w-[200px]">
-                    {renderEditableCell(deal, 'company', deal.company)}
+                  <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap min-w-[180px] max-w-[180px]">
+                    <div className="truncate" title={deal.company}>
+                      {isEditing(deal.id, 'company') ? (
+                        <div className="flex items-center gap-1">
+                          <Input
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            className="h-7 text-sm w-32"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveEdit();
+                              if (e.key === 'Escape') cancelEditing();
+                            }}
+                          />
+                          <button onClick={saveEdit} className="text-green-600 hover:text-green-700 cursor-pointer">
+                            <Check className="w-4 h-4" />
+                          </button>
+                          <button onClick={cancelEditing} className="text-red-600 hover:text-red-700 cursor-pointer">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span
+                          onClick={() => startEditing(deal.id, 'company', deal.company)}
+                          className="cursor-pointer hover:text-blue-600 block truncate"
+                          title={deal.company}
+                        >
+                          {deal.company}
+                        </span>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap min-w-[80px]">
                     {renderEditableCell(deal, 'dealId', deal.dealId)}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
+                  <td className="px-4 py-3 whitespace-nowrap min-w-[120px]">
                     <select
                       value={deal.status}
                       onChange={(e) => updateDealField(deal.id, 'status', e.target.value)}
@@ -526,8 +555,8 @@ export default function DealsPage() {
                       ))}
                     </select>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="flex items-center gap-1">
+                  <td className="px-4 py-3 whitespace-nowrap min-w-[200px] max-w-[280px]">
+                    <div className="flex items-center gap-1 flex-wrap">
                       <select
                         value=""
                         onChange={(e) => {
@@ -535,7 +564,7 @@ export default function DealsPage() {
                             toggleFlag(deal.id, e.target.value);
                           }
                         }}
-                        className="h-6 px-1 text-xs border rounded bg-white cursor-pointer"
+                        className="h-6 px-1 text-xs border rounded bg-white cursor-pointer flex-shrink-0"
                       >
                         <option value="">+ Flag</option>
                         {flagOptionsList.map((opt) => (
@@ -546,12 +575,12 @@ export default function DealsPage() {
                         <Badge 
                           key={i} 
                           variant="outline" 
-                          className={`text-xs cursor-pointer hover:opacity-70 ${getFlagColor(flag)}`}
+                          className={`text-xs cursor-pointer hover:opacity-70 flex-shrink-0 ${getFlagColor(flag)}`}
                           onClick={() => toggleFlag(deal.id, flag)}
                           title="Click to remove"
                         >
-                          {flag}
-                          <X className="w-3 h-3 ml-1" />
+                          <span className="truncate max-w-[150px]">{flag}</span>
+                          <X className="w-3 h-3 ml-1 flex-shrink-0" />
                         </Badge>
                       ))}
                     </div>
