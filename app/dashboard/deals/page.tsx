@@ -10,8 +10,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link';
 import { 
   Plus, Search, Download, Upload, MoreVertical, Check, X, 
-  Building2, Users, MapPin, FileText, Settings
+  Building2, Users, MapPin, FileText, Settings, Trash2, UserPlus
 } from 'lucide-react';
+
+interface Owner {
+  id: string;
+  name: string;
+  ssn: string;
+  dateOfBirth: string;
+  homeAddress: string;
+  percentOwned: number;
+}
 
 interface Deal {
   id: number;
@@ -34,7 +43,17 @@ interface Deal {
   monthlyRev: number | null;
   originator: string;
   closer: string;
+  owners: Owner[];
 }
+
+const createEmptyOwner = (): Owner => ({
+  id: Math.random().toString(36).substring(2, 9),
+  name: '',
+  ssn: '',
+  dateOfBirth: '',
+  homeAddress: '',
+  percentOwned: 0,
+});
 
 const initialDeals: Deal[] = [
   {
@@ -58,6 +77,7 @@ const initialDeals: Deal[] = [
     monthlyRev: 843173.00,
     originator: 'Main Wills',
     closer: '',
+    owners: [{ id: '1', name: 'Cesar Carmen', ssn: '', dateOfBirth: '', homeAddress: '', percentOwned: 100 }],
   },
   {
     id: 2,
@@ -80,6 +100,7 @@ const initialDeals: Deal[] = [
     monthlyRev: 843727.00,
     originator: 'Main Wills',
     closer: '',
+    owners: [],
   },
   {
     id: 3,
@@ -102,6 +123,7 @@ const initialDeals: Deal[] = [
     monthlyRev: 805471.04,
     originator: 'Main Wills',
     closer: '',
+    owners: [],
   },
   {
     id: 4,
@@ -124,6 +146,7 @@ const initialDeals: Deal[] = [
     monthlyRev: 801887.75,
     originator: 'Main Wills',
     closer: '',
+    owners: [],
   },
   {
     id: 5,
@@ -146,6 +169,7 @@ const initialDeals: Deal[] = [
     monthlyRev: 336893.73,
     originator: 'Main Wills',
     closer: '',
+    owners: [],
   },
   {
     id: 6,
@@ -168,6 +192,7 @@ const initialDeals: Deal[] = [
     monthlyRev: 471202.17,
     originator: 'Main Wills',
     closer: '',
+    owners: [],
   },
   {
     id: 7,
@@ -190,6 +215,7 @@ const initialDeals: Deal[] = [
     monthlyRev: 382900.00,
     originator: 'Main Wills',
     closer: '',
+    owners: [],
   },
   {
     id: 8,
@@ -212,6 +238,7 @@ const initialDeals: Deal[] = [
     monthlyRev: 644882.21,
     originator: 'Main Wills',
     closer: '',
+    owners: [],
   },
 ];
 
@@ -249,9 +276,12 @@ interface EditModalProps {
 }
 
 function EditDealModal({ deal, onClose, onSave }: EditModalProps) {
-  const [formData, setFormData] = useState<Deal>({ ...deal });
+  const [formData, setFormData] = useState<Deal>({ 
+    ...deal, 
+    owners: deal.owners || [] 
+  });
 
-  const handleChange = (field: keyof Deal, value: string | string[] | number | null) => {
+  const handleChange = (field: keyof Deal, value: string | string[] | number | null | Owner[]) => {
     setFormData({ ...formData, [field]: value });
   };
 
@@ -266,6 +296,22 @@ function EditDealModal({ deal, onClose, onSave }: EditModalProps) {
       ? formData.flags.filter(f => f !== flag)
       : [...formData.flags, flag];
     handleChange('flags', newFlags);
+  };
+
+  const addOwner = () => {
+    const newOwner = createEmptyOwner();
+    handleChange('owners', [...formData.owners, newOwner]);
+  };
+
+  const removeOwner = (ownerId: string) => {
+    handleChange('owners', formData.owners.filter(o => o.id !== ownerId));
+  };
+
+  const updateOwner = (ownerId: string, field: keyof Owner, value: string | number) => {
+    const updatedOwners = formData.owners.map(owner => 
+      owner.id === ownerId ? { ...owner, [field]: value } : owner
+    );
+    handleChange('owners', updatedOwners);
   };
 
   const selectClassName = "w-full h-10 px-3 border border-gray-200 rounded-lg text-sm bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -448,6 +494,112 @@ function EditDealModal({ deal, onClose, onSave }: EditModalProps) {
                   </select>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
+                    <UserPlus className="w-4 h-4 text-teal-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">Owner Information</CardTitle>
+                    <CardDescription className="text-xs">Add business owners and their details</CardDescription>
+                  </div>
+                </div>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addOwner}
+                  className="cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Owner
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {formData.owners.length === 0 ? (
+                <div className="text-center py-6 text-gray-500 border-2 border-dashed rounded-lg">
+                  <UserPlus className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <p className="text-sm">No owners added yet</p>
+                  <p className="text-xs text-gray-400 mt-1">Click "Add Owner" to add business owner information</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {formData.owners.map((owner, index) => (
+                    <div key={owner.id} className="border rounded-lg p-4 bg-gray-50/50">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium text-gray-900">Owner {index + 1}</h4>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeOwner(owner.id)}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-gray-700">Owner Name</Label>
+                          <Input
+                            value={owner.name}
+                            onChange={(e) => updateOwner(owner.id, 'name', e.target.value)}
+                            placeholder="Full legal name"
+                            className={inputClassName}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-gray-700">SSN</Label>
+                          <Input
+                            value={owner.ssn}
+                            onChange={(e) => updateOwner(owner.id, 'ssn', e.target.value)}
+                            placeholder="XXX-XX-XXXX"
+                            className={inputClassName}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-gray-700">Date of Birth</Label>
+                          <Input
+                            type="date"
+                            value={owner.dateOfBirth}
+                            onChange={(e) => updateOwner(owner.id, 'dateOfBirth', e.target.value)}
+                            className={inputClassName}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-gray-700">% Owned</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={owner.percentOwned}
+                            onChange={(e) => updateOwner(owner.id, 'percentOwned', parseFloat(e.target.value) || 0)}
+                            placeholder="0-100"
+                            className={inputClassName}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-4 space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Home Address</Label>
+                        <Input
+                          value={owner.homeAddress}
+                          onChange={(e) => updateOwner(owner.id, 'homeAddress', e.target.value)}
+                          placeholder="Full home address"
+                          className={inputClassName}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
