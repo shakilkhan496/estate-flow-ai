@@ -4,11 +4,23 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, Upload, Plus, X, Check } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  Upload, 
+  Plus, 
+  X, 
+  Check, 
+  FileText, 
+  Building2, 
+  Users, 
+  MapPin, 
+  Briefcase,
+  Settings
+} from 'lucide-react';
 
 const originatorOptions = ['Marc Willis', 'Sarah Johnson', 'Mike Chen', 'Main Wills'];
 const closerOptions = ['Tom Brown', 'Lisa Wong', 'David Miller'];
@@ -29,11 +41,11 @@ interface Owner {
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.03 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
+  hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
 };
 
@@ -95,6 +107,9 @@ export default function NewDealPage() {
     router.push('/dashboard/deals');
   };
 
+  const selectClassName = "w-full h-10 px-3 border border-gray-200 rounded-lg text-sm bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
+  const inputClassName = "h-10 border-gray-200 focus:ring-2 focus:ring-blue-500";
+
   return (
     <motion.div
       variants={containerVariants}
@@ -102,75 +117,109 @@ export default function NewDealPage() {
       animate="visible"
       className="space-y-6 max-w-4xl"
     >
-      <motion.div variants={itemVariants} className="flex items-center gap-2 text-sm text-gray-500">
-        <Link href="/dashboard/deals" className="flex items-center gap-1 hover:text-gray-700">
-          <ChevronLeft className="w-4 h-4" />
-          Deals
-        </Link>
-        <span>/</span>
-        <span className="text-gray-900">New Deal</span>
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <FileText className="w-6 h-6 text-blue-600" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+              <Link href="/dashboard/deals" className="hover:text-blue-600">Deals</Link>
+              <span>/</span>
+              <span>New Deal</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">New Deal</h1>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard/deals">
+            <Button variant="outline" className="cursor-pointer">
+              Cancel
+            </Button>
+          </Link>
+          <Button onClick={handleSave} className="cursor-pointer bg-blue-600 hover:bg-blue-700">
+            <Check className="w-4 h-4 mr-2" />
+            Save Deal
+          </Button>
+        </div>
       </motion.div>
-
-      <motion.h1 variants={itemVariants} className="text-2xl font-bold text-gray-900">
-        New Deal
-      </motion.h1>
 
       <motion.div variants={itemVariants}>
         <Card>
-          <CardContent className="p-6 space-y-6">
-            <div>
-              <Label className="text-sm font-medium">Setup Method*</Label>
-              <div className="mt-2 space-y-2">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="setupMethod"
-                    checked={setupMethod === 'manual'}
-                    onChange={() => setSetupMethod('manual')}
-                    className="mt-1"
-                  />
-                  <div>
-                    <span className="font-medium text-sm bg-gray-100 px-2 py-0.5 rounded">Manual Entry</span>
-                    <p className="text-sm text-gray-500 mt-0.5">Enter deal details yourself.</p>
-                  </div>
-                </label>
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="setupMethod"
-                    checked={setupMethod === 'upload'}
-                    onChange={() => setSetupMethod('upload')}
-                    className="mt-1"
-                  />
-                  <div>
-                    <span className="font-medium text-sm bg-gray-100 px-2 py-0.5 rounded">Upload & Scan</span>
-                    <p className="text-sm text-gray-500 mt-0.5">Our AI will scan the application.</p>
-                  </div>
-                </label>
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Settings className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Setup Method</CardTitle>
+                <CardDescription>Choose how you want to create this deal</CardDescription>
               </div>
             </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label 
+                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                  setupMethod === 'manual' 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="setupMethod"
+                  checked={setupMethod === 'manual'}
+                  onChange={() => setSetupMethod('manual')}
+                  className="mt-1"
+                />
+                <div>
+                  <span className="font-medium text-gray-900">Manual Entry</span>
+                  <p className="text-sm text-gray-500 mt-0.5">Enter deal details yourself.</p>
+                </div>
+              </label>
+              <label 
+                className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                  setupMethod === 'upload' 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="setupMethod"
+                  checked={setupMethod === 'upload'}
+                  onChange={() => setSetupMethod('upload')}
+                  className="mt-1"
+                />
+                <div>
+                  <span className="font-medium text-gray-900">Upload & Scan</span>
+                  <p className="text-sm text-gray-500 mt-0.5">Our AI will scan the application.</p>
+                </div>
+              </label>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium">Originators</Label>
-                <p className="text-xs text-gray-500 mb-2">The users who have access to this deal and can reassign it (select one or more)</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Originators</Label>
+                <p className="text-xs text-gray-500">Users who have access to this deal</p>
                 <select
                   value={originators}
                   onChange={(e) => setOriginators(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-md text-sm bg-white cursor-pointer"
+                  className={selectClassName}
                 >
                   {originatorOptions.map((opt) => (
                     <option key={opt} value={opt}>{opt}</option>
                   ))}
                 </select>
               </div>
-              <div>
-                <Label className="text-sm font-medium">Primary Originator</Label>
-                <p className="text-xs text-gray-500 mb-2">The user who gets credit for this deal on the leaderboard (select one)</p>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Primary Originator</Label>
+                <p className="text-xs text-gray-500">User who gets credit on the leaderboard</p>
                 <select
                   value={primaryOriginator}
                   onChange={(e) => setPrimaryOriginator(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-md text-sm bg-white cursor-pointer"
+                  className={selectClassName}
                 >
                   {originatorOptions.map((opt) => (
                     <option key={opt} value={opt}>{opt}</option>
@@ -184,79 +233,205 @@ export default function NewDealPage() {
 
       <motion.div variants={itemVariants}>
         <Card>
-          <CardContent className="p-6 space-y-6">
-            <div>
-              <Label className="text-sm font-medium">Company</Label>
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-green-600" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Business Information</CardTitle>
+                <CardDescription>Enter the company details</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">Company Name</Label>
               <Input
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                className="mt-2"
-                placeholder=""
+                className={inputClassName}
+                placeholder="Enter company name"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium">DBA</Label>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">DBA (Doing Business As)</Label>
                 <Input
                   value={dba}
                   onChange={(e) => setDba(e.target.value)}
-                  className="mt-2"
+                  className={inputClassName}
+                  placeholder="Optional"
                 />
               </div>
-              <div>
-                <Label className="text-sm font-medium">Application</Label>
-                <div className="mt-2 w-20 h-20 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
-                  <Upload className="w-5 h-5 text-gray-400" />
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">EIN</Label>
+                <Input
+                  value={ein}
+                  onChange={(e) => setEin(e.target.value)}
+                  className={inputClassName}
+                  placeholder="XX-XXXXXXX"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Application</Label>
+                <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50/50 transition-colors cursor-pointer">
+                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-sm text-gray-500">Click to upload</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Bank Statements</Label>
+                <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center hover:border-blue-400 hover:bg-blue-50/50 transition-colors cursor-pointer">
+                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-sm text-gray-500">Click to upload</span>
                 </div>
               </div>
             </div>
 
-            <div>
-              <Label className="text-sm font-medium">Bank Statements</Label>
-              <div className="mt-2 w-20 h-20 border-2 border-dashed rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50">
-                <Upload className="w-5 h-5 text-gray-400" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Industry</Label>
+                <select
+                  value={industry}
+                  onChange={(e) => setIndustry(e.target.value)}
+                  className={selectClassName}
+                >
+                  <option value="">Select industry...</option>
+                  {industryOptions.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Legal Structure</Label>
+                <select
+                  value={legalStructure}
+                  onChange={(e) => setLegalStructure(e.target.value)}
+                  className={selectClassName}
+                >
+                  <option value="">Select structure...</option>
+                  {legalStructureOptions.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            <div>
-              <Label className="text-sm font-medium">Owners</Label>
-              <div className="mt-2 border rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Website</Label>
+                <Input
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className={inputClassName}
+                  placeholder="https://example.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Business Email</Label>
+                <Input
+                  type="email"
+                  value={businessEmail}
+                  onChange={(e) => setBusinessEmail(e.target.value)}
+                  className={inputClassName}
+                  placeholder="contact@company.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Business Phone</Label>
+                <div className="flex gap-2">
+                  <select className="h-10 px-3 border border-gray-200 rounded-lg text-sm bg-white w-20 cursor-pointer">
+                    <option>+1</option>
+                    <option>+44</option>
+                    <option>+52</option>
+                  </select>
+                  <Input
+                    value={businessPhone}
+                    onChange={(e) => setBusinessPhone(e.target.value)}
+                    placeholder="(555) 555-5555"
+                    className={`flex-1 ${inputClassName}`}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Purpose of Funds</Label>
+                <Input
+                  value={purposeOfFunds}
+                  onChange={(e) => setPurposeOfFunds(e.target.value)}
+                  className={inputClassName}
+                  placeholder="Working capital, equipment, etc."
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Users className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Owners & Team</CardTitle>
+                <CardDescription>Add business owners and assign team members</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">Business Owners</Label>
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
                 {owners.length === 0 && !showOwnerForm ? (
-                  <div className="p-4 text-center text-sm text-gray-500">
-                    There are no options
+                  <div className="p-6 text-center text-sm text-gray-500 bg-gray-50">
+                    No owners added yet
                   </div>
                 ) : (
-                  <div className="p-2 space-y-2">
+                  <div className="divide-y">
                     {owners.map((owner) => (
-                      <div key={owner.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <div key={owner.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
                         <div>
-                          <p className="text-sm font-medium">{owner.name}</p>
-                          {owner.email && <p className="text-xs text-gray-500">{owner.email}</p>}
+                          <p className="font-medium text-gray-900">{owner.name}</p>
+                          {owner.email && <p className="text-sm text-gray-500">{owner.email}</p>}
                         </div>
-                        <button onClick={() => handleRemoveOwner(owner.id)} className="text-gray-400 hover:text-red-500 cursor-pointer">
-                          <X className="w-4 h-4" />
+                        <button 
+                          onClick={() => handleRemoveOwner(owner.id)} 
+                          className="text-gray-400 hover:text-red-500 p-1 cursor-pointer"
+                        >
+                          <X className="w-5 h-5" />
                         </button>
                       </div>
                     ))}
                   </div>
                 )}
                 {showOwnerForm ? (
-                  <div className="p-3 border-t space-y-2">
+                  <div className="p-4 bg-gray-50 border-t space-y-3">
                     <Input
                       placeholder="Owner name"
                       value={newOwnerName}
                       onChange={(e) => setNewOwnerName(e.target.value)}
+                      className={inputClassName}
                     />
                     <Input
-                      placeholder="Owner email"
+                      placeholder="Owner email (optional)"
                       value={newOwnerEmail}
                       onChange={(e) => setNewOwnerEmail(e.target.value)}
+                      className={inputClassName}
                     />
                     <div className="flex gap-2">
                       <Button size="sm" onClick={handleAddOwner} className="cursor-pointer">
                         <Check className="w-4 h-4 mr-1" />
-                        Add
+                        Add Owner
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => setShowOwnerForm(false)} className="cursor-pointer">
                         Cancel
@@ -266,142 +441,155 @@ export default function NewDealPage() {
                 ) : (
                   <button
                     onClick={() => setShowOwnerForm(true)}
-                    className="w-full p-3 border-t text-left text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-1 cursor-pointer"
+                    className="w-full p-4 border-t text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2 cursor-pointer font-medium"
                   >
                     <Plus className="w-4 h-4" />
-                    New
+                    Add Owner
                   </button>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium">Closers</Label>
-                <p className="text-xs text-gray-500 mb-2">Additional users who can access this deal</p>
-                <select
-                  value={closers}
-                  onChange={(e) => setClosers(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-md text-sm bg-white cursor-pointer"
-                >
-                  <option value="">Select...</option>
-                  {closerOptions.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">Closers</Label>
+              <p className="text-xs text-gray-500">Additional users who can access this deal</p>
+              <select
+                value={closers}
+                onChange={(e) => setClosers(e.target.value)}
+                className={selectClassName}
+              >
+                <option value="">Select closer...</option>
+                {closerOptions.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <Label className="text-sm font-medium">EIN</Label>
-                <Input
-                  value={ein}
-                  onChange={(e) => setEin(e.target.value)}
-                  className="mt-2"
-                />
+                <CardTitle className="text-lg">Location & Dates</CardTitle>
+                <CardDescription>Business address and important dates</CardDescription>
               </div>
             </div>
-
+          </CardHeader>
+          <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium">Start date</Label>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Start Date</Label>
                 <Input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="mt-2"
+                  className={inputClassName}
                 />
               </div>
-              <div>
-                <Label className="text-sm font-medium">Business address</Label>
-                <div className="mt-2 space-y-2">
-                  <Input
-                    placeholder="Street"
-                    value={street}
-                    onChange={(e) => setStreet(e.target.value)}
-                  />
-                  <Input
-                    placeholder="Suite / Apt. / Building"
-                    value={suite}
-                    onChange={(e) => setSuite(e.target.value)}
-                  />
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Created At</Label>
+                <Input
+                  type="date"
+                  value={createdAt}
+                  onChange={(e) => setCreatedAt(e.target.value)}
+                  className={inputClassName}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <Label className="text-sm font-medium text-gray-700">Business Address</Label>
+              <div className="grid grid-cols-1 gap-3">
+                <Input
+                  placeholder="Street address"
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value)}
+                  className={inputClassName}
+                />
+                <Input
+                  placeholder="Suite / Apt. / Building (optional)"
+                  value={suite}
+                  onChange={(e) => setSuite(e.target.value)}
+                  className={inputClassName}
+                />
+                <div className="grid grid-cols-2 gap-3">
                   <Input
                     placeholder="City"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
+                    className={inputClassName}
                   />
                   <Input
                     placeholder="State / Region"
                     value={stateRegion}
                     onChange={(e) => setStateRegion(e.target.value)}
+                    className={inputClassName}
                   />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      placeholder="Postal Code"
-                      value={postalCode}
-                      onChange={(e) => setPostalCode(e.target.value)}
-                    />
-                    <select
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      className="h-10 px-3 border rounded-md text-sm bg-white cursor-pointer"
-                    >
-                      {countryOptions.map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    placeholder="Postal Code"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    className={inputClassName}
+                  />
+                  <select
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    className={selectClassName}
+                  >
+                    {countryOptions.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium">State incorporated</Label>
-                <select
-                  value={stateIncorporated}
-                  onChange={(e) => setStateIncorporated(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-md text-sm bg-white mt-2 cursor-pointer"
-                >
-                  <option value="">Select...</option>
-                  {stateOptions.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">State Incorporated</Label>
+              <select
+                value={stateIncorporated}
+                onChange={(e) => setStateIncorporated(e.target.value)}
+                className={selectClassName}
+              >
+                <option value="">Select state...</option>
+                {stateOptions.map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <Briefcase className="w-5 h-5 text-yellow-600" />
               </div>
               <div>
-                <Label className="text-sm font-medium">Industry</Label>
-                <select
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-md text-sm bg-white mt-2 cursor-pointer"
-                >
-                  <option value="">Select...</option>
-                  {industryOptions.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
+                <CardTitle className="text-lg">Additional Settings</CardTitle>
+                <CardDescription>Optional configuration options</CardDescription>
               </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium">Legal structure</Label>
-                <select
-                  value={legalStructure}
-                  onChange={(e) => setLegalStructure(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-md text-sm bg-white mt-2 cursor-pointer"
-                >
-                  <option value="">Select...</option>
-                  {legalStructureOptions.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Batch</Label>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Batch</Label>
                 <select
                   value={batch}
                   onChange={(e) => setBatch(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-md text-sm bg-white mt-2 cursor-pointer"
+                  className={selectClassName}
                 >
                   <option value="">Select...</option>
                   {batchOptions.map((opt) => (
@@ -409,15 +597,12 @@ export default function NewDealPage() {
                   ))}
                 </select>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium">Merchant</Label>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Merchant</Label>
                 <select
                   value={merchant}
                   onChange={(e) => setMerchant(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-md text-sm bg-white mt-2 cursor-pointer"
+                  className={selectClassName}
                 >
                   <option value="">Select...</option>
                   {merchantOptions.map((opt) => (
@@ -425,12 +610,12 @@ export default function NewDealPage() {
                   ))}
                 </select>
               </div>
-              <div>
-                <Label className="text-sm font-medium">Channel</Label>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Channel</Label>
                 <select
                   value={channel}
                   onChange={(e) => setChannel(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-md text-sm bg-white mt-2 cursor-pointer"
+                  className={selectClassName}
                 >
                   <option value="">Select...</option>
                   {channelOptions.map((opt) => (
@@ -438,15 +623,12 @@ export default function NewDealPage() {
                   ))}
                 </select>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium">Template</Label>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Template</Label>
                 <select
                   value={template}
                   onChange={(e) => setTemplate(e.target.value)}
-                  className="w-full h-10 px-3 border rounded-md text-sm bg-white mt-2 cursor-pointer"
+                  className={selectClassName}
                 >
                   <option value="">Select...</option>
                   {templateOptions.map((opt) => (
@@ -454,78 +636,20 @@ export default function NewDealPage() {
                   ))}
                 </select>
               </div>
-              <div>
-                <Label className="text-sm font-medium">Business phone</Label>
-                <div className="flex gap-2 mt-2">
-                  <select className="h-10 px-2 border rounded-md text-sm bg-white w-16 cursor-pointer">
-                    <option>us</option>
-                    <option>ca</option>
-                    <option>mx</option>
-                  </select>
-                  <Input
-                    value={businessPhone}
-                    onChange={(e) => setBusinessPhone(e.target.value)}
-                    placeholder="(555) 555-5555"
-                    className="flex-1"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium">Website</Label>
-                <Input
-                  value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
-                  className="mt-2"
-                  placeholder="https://"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Business email</Label>
-                <Input
-                  type="email"
-                  value={businessEmail}
-                  onChange={(e) => setBusinessEmail(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-sm font-medium">Purpose of funds</Label>
-                <Input
-                  value={purposeOfFunds}
-                  onChange={(e) => setPurposeOfFunds(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Created at</Label>
-                <Input
-                  type="date"
-                  value={createdAt}
-                  onChange={(e) => setCreatedAt(e.target.value)}
-                  className="mt-2"
-                />
-              </div>
             </div>
           </CardContent>
         </Card>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="flex items-center gap-3 pb-6">
+      <motion.div variants={itemVariants} className="flex items-center justify-end gap-3 pb-8">
         <Link href="/dashboard/deals">
-          <Button variant="outline" className="cursor-pointer">
-            <ChevronLeft className="w-4 h-4 mr-1" />
+          <Button variant="outline" size="lg" className="cursor-pointer">
             Cancel
           </Button>
         </Link>
-        <Button onClick={handleSave} className="cursor-pointer bg-blue-600 hover:bg-blue-700">
-          <Check className="w-4 h-4 mr-1" />
-          Save
+        <Button size="lg" onClick={handleSave} className="cursor-pointer bg-blue-600 hover:bg-blue-700">
+          <Check className="w-4 h-4 mr-2" />
+          Save Deal
         </Button>
       </motion.div>
     </motion.div>
