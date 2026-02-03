@@ -16,6 +16,7 @@ import {
 interface Owner {
   id: string;
   name: string;
+  phone: string;
   ssn: string;
   dateOfBirth: string;
   homeAddress: string;
@@ -49,6 +50,7 @@ interface Deal {
 const createEmptyOwner = (): Owner => ({
   id: Math.random().toString(36).substring(2, 9),
   name: '',
+  phone: '',
   ssn: '',
   dateOfBirth: '',
   homeAddress: '',
@@ -77,7 +79,7 @@ const initialDeals: Deal[] = [
     monthlyRev: 843173.00,
     originator: 'Main Wills',
     closer: '',
-    owners: [{ id: '1', name: 'Cesar Carmen', ssn: '', dateOfBirth: '', homeAddress: '', percentOwned: 100 }],
+    owners: [{ id: '1', name: 'Cesar Carmen', phone: '', ssn: '', dateOfBirth: '', homeAddress: '', percentOwned: 100 }],
   },
   {
     id: 2,
@@ -555,22 +557,22 @@ function EditDealModal({ deal, onClose, onSave }: EditModalProps) {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium text-gray-700">SSN</Label>
+                          <Label className="text-sm font-medium text-gray-700">Phone Number</Label>
                           <Input
-                            value={owner.ssn}
-                            onChange={(e) => updateOwner(owner.id, 'ssn', e.target.value)}
-                            placeholder="XXX-XX-XXXX"
+                            value={owner.phone}
+                            onChange={(e) => updateOwner(owner.id, 'phone', e.target.value)}
+                            placeholder="(XXX) XXX-XXXX"
                             className={inputClassName}
                           />
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium text-gray-700">Date of Birth</Label>
+                          <Label className="text-sm font-medium text-gray-700">SSN</Label>
                           <Input
-                            type="date"
-                            value={owner.dateOfBirth}
-                            onChange={(e) => updateOwner(owner.id, 'dateOfBirth', e.target.value)}
+                            value={owner.ssn}
+                            onChange={(e) => updateOwner(owner.id, 'ssn', e.target.value)}
+                            placeholder="XXX-XX-XXXX"
                             className={inputClassName}
                           />
                         </div>
@@ -587,14 +589,25 @@ function EditDealModal({ deal, onClose, onSave }: EditModalProps) {
                           />
                         </div>
                       </div>
-                      <div className="mt-4 space-y-2">
-                        <Label className="text-sm font-medium text-gray-700">Home Address</Label>
-                        <Input
-                          value={owner.homeAddress}
-                          onChange={(e) => updateOwner(owner.id, 'homeAddress', e.target.value)}
-                          placeholder="Full home address"
-                          className={inputClassName}
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-gray-700">Date of Birth</Label>
+                          <Input
+                            type="date"
+                            value={owner.dateOfBirth}
+                            onChange={(e) => updateOwner(owner.id, 'dateOfBirth', e.target.value)}
+                            className={inputClassName}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-gray-700">Home Address</Label>
+                          <Input
+                            value={owner.homeAddress}
+                            onChange={(e) => updateOwner(owner.id, 'homeAddress', e.target.value)}
+                            placeholder="Full home address"
+                            className={inputClassName}
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
