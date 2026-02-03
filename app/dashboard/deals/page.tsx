@@ -714,18 +714,18 @@ function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit,
 
   return (
     <div 
-      className="flex-shrink-0 w-[280px] bg-gray-50 rounded-b-lg flex flex-col"
+      className="flex-shrink-0 w-[260px] bg-gray-100 rounded-lg flex flex-col min-h-[150px]"
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, stage.id)}
     >
-      <div className="p-2 space-y-2 min-h-[100px]">
+      <div className="p-2 space-y-2">
         <AnimatePresence>
           {deals.map((deal) => (
             <DealCard key={deal.id} deal={deal} onDragStart={onDragStart} onEdit={onEdit} />
           ))}
         </AnimatePresence>
         {deals.length === 0 && (
-          <div className="flex items-center justify-center h-20 text-xs text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+          <div className="flex items-center justify-center h-24 text-xs text-gray-400 border-2 border-dashed border-gray-300 rounded-lg bg-white">
             Drop deals here
           </div>
         )}
@@ -1503,46 +1503,42 @@ export default function DealsPage() {
       </motion.div>
 
       {viewMode === 'pipeline' ? (
-        <>
-          <motion.div 
-            variants={itemVariants} 
-            className="sticky top-0 z-30 bg-white border border-b-0 rounded-t-lg"
+        <motion.div variants={itemVariants} className="bg-white border rounded-lg">
+          <div 
+            id="pipeline-header"
+            className="flex gap-3 p-4 pb-2 overflow-x-auto sticky top-0 bg-white z-10 border-b rounded-t-lg"
+            onScroll={(e) => {
+              const container = document.getElementById('pipeline-cards');
+              if (container) container.scrollLeft = e.currentTarget.scrollLeft;
+            }}
           >
-            <div 
-              id="pipeline-header"
-              className="flex gap-3 p-4 overflow-x-auto"
-              onScroll={(e) => {
-                const container = document.getElementById('pipeline-cards');
-                if (container) container.scrollLeft = e.currentTarget.scrollLeft;
-              }}
-            >
-              {pipelineStages.map((stage) => {
-                const stageDeals = getDealsByStage(stage.id);
-                const stageTotal = getStageTotal(stage.id);
-                const formatAmount = (value: number) => {
-                  if (value === 0) return null;
-                  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
-                };
-                return (
-                  <div key={stage.id} className="flex-shrink-0 w-[280px] p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${stage.color}`} />
-                        <h3 className="font-medium text-gray-900 text-sm">{stage.name}</h3>
-                      </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {stageDeals.length}
-                      </Badge>
+            {pipelineStages.map((stage) => {
+              const stageDeals = getDealsByStage(stage.id);
+              const stageTotal = getStageTotal(stage.id);
+              const formatAmount = (value: number) => {
+                if (value === 0) return null;
+                return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+              };
+              return (
+                <div key={stage.id} className="flex-shrink-0 w-[260px] p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${stage.color}`} />
+                      <h3 className="font-medium text-gray-900 text-sm">{stage.name}</h3>
                     </div>
-                    {stageTotal > 0 && (
-                      <p className="text-xs text-gray-500">{formatAmount(stageTotal)}</p>
-                    )}
+                    <Badge variant="secondary" className="text-xs">
+                      {stageDeals.length}
+                    </Badge>
                   </div>
-                );
-              })}
-            </div>
-          </motion.div>
-          <motion.div variants={itemVariants} className="relative bg-white border border-t-0 rounded-b-lg">
+                  {stageTotal > 0 && (
+                    <p className="text-xs text-gray-500">{formatAmount(stageTotal)}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="relative">
             <Button
               variant="outline"
               size="sm"
@@ -1562,7 +1558,7 @@ export default function DealsPage() {
 
             <div 
               id="pipeline-cards"
-              className="flex gap-3 p-4 overflow-x-auto"
+              className="flex gap-3 p-4 pt-2 overflow-x-auto"
               style={{ scrollBehavior: 'smooth' }}
               onScroll={(e) => {
                 const header = document.getElementById('pipeline-header');
@@ -1582,8 +1578,8 @@ export default function DealsPage() {
                 />
               ))}
             </div>
-          </motion.div>
-        </>
+          </div>
+        </motion.div>
       ) : (
         <motion.div variants={itemVariants} className="bg-white rounded-lg border overflow-hidden">
           <div className="overflow-x-auto">
