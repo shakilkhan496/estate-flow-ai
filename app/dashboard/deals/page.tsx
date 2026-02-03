@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Filter, Download, Upload, MoreVertical } from 'lucide-react';
+import { Plus, Search, Download, Upload, MoreVertical } from 'lucide-react';
 
 interface Deal {
   id: number;
@@ -297,8 +297,6 @@ const sampleDeals: Deal[] = [
   },
 ];
 
-const statusFilters = ['All', 'To Submit', 'Active', 'D+ Funded', 'Closed'];
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.02 } },
@@ -309,30 +307,37 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
+const statusOptions = ['All', 'Ready to Submit', 'Pending', 'Processing', 'Approved', 'Funded', 'Declined', 'Withdrawn'];
+const flagOptions = ['All', 'Awaiting Additional Documents', 'Stiplisted', 'Priority', 'VIP Client', 'Needs Review'];
+const originatorOptions = ['All', 'Main Wills', 'Sarah Johnson', 'Mike Chen'];
+const closerOptions = ['All', 'Tom Brown', 'Lisa Wong', 'David Miller'];
+
 export default function DealsPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [dealIdFilter, setDealIdFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [flagsFilter, setFlagsFilter] = useState('All');
+  const [ownerFilter, setOwnerFilter] = useState('');
+  const [originatorFilter, setOriginatorFilter] = useState('All');
+  const [closerFilter, setCloserFilter] = useState('All');
 
   const filteredDeals = sampleDeals.filter((deal) => {
-    const matchesSearch = 
-      deal.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      deal.dealId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      deal.owner.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !searchQuery || 
+      deal.company.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDealId = !dealIdFilter || 
+      deal.dealId.toLowerCase().includes(dealIdFilter.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || 
+      deal.status.toLowerCase() === statusFilter.toLowerCase();
+    const matchesFlags = flagsFilter === 'All' || 
+      deal.flags.some(f => f.toLowerCase().includes(flagsFilter.toLowerCase()));
+    const matchesOwner = !ownerFilter || 
+      deal.owner.toLowerCase().includes(ownerFilter.toLowerCase());
+    const matchesOriginator = originatorFilter === 'All' || 
+      deal.originator === originatorFilter;
+    const matchesCloser = closerFilter === 'All' || 
+      deal.closer === closerFilter;
     
-    let matchesFilter = true;
-    if (activeFilter !== 'All') {
-      if (activeFilter === 'To Submit') {
-        matchesFilter = deal.status.toLowerCase().includes('submit');
-      } else if (activeFilter === 'Active') {
-        matchesFilter = ['approved', 'processing', 'pending'].includes(deal.status.toLowerCase());
-      } else if (activeFilter === 'D+ Funded') {
-        matchesFilter = deal.status.toLowerCase() === 'funded';
-      } else if (activeFilter === 'Closed') {
-        matchesFilter = ['declined', 'withdrawn'].includes(deal.status.toLowerCase());
-      }
-    }
-    
-    return matchesSearch && matchesFilter;
+    return matchesSearch && matchesDealId && matchesStatus && matchesFlags && matchesOwner && matchesOriginator && matchesCloser;
   });
 
   const getStatusColor = (status: string) => {
@@ -370,28 +375,9 @@ export default function DealsPage() {
       animate="visible"
       className="space-y-4"
     >
-      <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Deals</h1>
         <div className="flex items-center gap-2">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Deals</h1>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative flex-1 min-w-[200px] lg:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-9"
-            />
-          </div>
-          <Button variant="outline" size="sm" className="cursor-pointer">
-            <Filter className="w-4 h-4 mr-1" />
-            Status
-          </Button>
-          <Button variant="outline" size="sm" className="cursor-pointer">
-            <Filter className="w-4 h-4 mr-1" />
-            Flags
-          </Button>
           <Button variant="outline" size="sm" className="cursor-pointer">
             <Upload className="w-4 h-4 mr-1" />
             Import
@@ -407,18 +393,70 @@ export default function DealsPage() {
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="flex gap-2 overflow-x-auto pb-2">
-        {statusFilters.map((filter) => (
-          <Button
-            key={filter}
-            variant={activeFilter === filter ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveFilter(filter)}
-            className="whitespace-nowrap cursor-pointer"
+      <motion.div variants={itemVariants} className="bg-white border rounded-lg p-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[140px] max-w-[180px]">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-8 text-sm"
+            />
+          </div>
+          <div className="flex-1 min-w-[100px] max-w-[120px]">
+            <Input
+              placeholder="Deal"
+              value={dealIdFilter}
+              onChange={(e) => setDealIdFilter(e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-8 px-2 border rounded text-sm bg-white min-w-[100px] cursor-pointer"
           >
-            {filter}
-          </Button>
-        ))}
+            {statusOptions.map((opt) => (
+              <option key={opt} value={opt}>{opt === 'All' ? 'Status' : opt}</option>
+            ))}
+          </select>
+          <select
+            value={flagsFilter}
+            onChange={(e) => setFlagsFilter(e.target.value)}
+            className="h-8 px-2 border rounded text-sm bg-white min-w-[80px] cursor-pointer"
+          >
+            {flagOptions.map((opt) => (
+              <option key={opt} value={opt}>{opt === 'All' ? 'Flags' : opt}</option>
+            ))}
+          </select>
+          <div className="flex-1 min-w-[100px] max-w-[120px]">
+            <Input
+              placeholder="Owner"
+              value={ownerFilter}
+              onChange={(e) => setOwnerFilter(e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
+          <select
+            value={originatorFilter}
+            onChange={(e) => setOriginatorFilter(e.target.value)}
+            className="h-8 px-2 border rounded text-sm bg-white min-w-[100px] cursor-pointer"
+          >
+            {originatorOptions.map((opt) => (
+              <option key={opt} value={opt}>{opt === 'All' ? 'Originators' : opt}</option>
+            ))}
+          </select>
+          <select
+            value={closerFilter}
+            onChange={(e) => setCloserFilter(e.target.value)}
+            className="h-8 px-2 border rounded text-sm bg-white min-w-[80px] cursor-pointer"
+          >
+            {closerOptions.map((opt) => (
+              <option key={opt} value={opt}>{opt === 'All' ? 'Closers' : opt}</option>
+            ))}
+          </select>
+        </div>
       </motion.div>
 
       <motion.div variants={itemVariants} className="bg-white rounded-lg border overflow-hidden">
