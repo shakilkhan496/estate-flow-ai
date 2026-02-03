@@ -1506,7 +1506,7 @@ export default function DealsPage() {
         <motion.div variants={itemVariants} className="bg-white border rounded-lg">
           <div 
             id="pipeline-header"
-            className="flex gap-3 p-4 pb-2 overflow-x-auto sticky top-0 bg-white z-10 border-b rounded-t-lg scrollbar-hide"
+            className="flex gap-3 p-4 pb-2 mx-12 overflow-x-auto sticky top-0 bg-white z-10 border-b rounded-t-lg scrollbar-hide"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             onScroll={(e) => {
               const container = document.getElementById('pipeline-cards');
@@ -1544,7 +1544,7 @@ export default function DealsPage() {
               variant="outline"
               size="sm"
               onClick={scrollLeft}
-              className="absolute left-2 top-20 z-20 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 h-10 w-10 p-0 rounded-full shadow-lg bg-white hover:bg-gray-50 cursor-pointer border-gray-300"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -1552,14 +1552,14 @@ export default function DealsPage() {
               variant="outline"
               size="sm"
               onClick={scrollRight}
-              className="absolute right-2 top-20 z-20 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 h-10 w-10 p-0 rounded-full shadow-lg bg-white hover:bg-gray-50 cursor-pointer border-gray-300"
             >
               <ChevronRight className="w-5 h-5" />
             </Button>
 
             <div 
               id="pipeline-cards"
-              className="flex gap-3 p-4 pt-2 overflow-x-auto"
+              className="flex gap-3 p-4 pt-2 mx-12 overflow-x-auto"
               style={{ scrollBehavior: 'smooth' }}
               onScroll={(e) => {
                 const header = document.getElementById('pipeline-header');
