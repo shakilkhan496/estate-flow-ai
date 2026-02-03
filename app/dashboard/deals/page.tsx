@@ -975,6 +975,7 @@ export default function DealsPage() {
                 <th className="text-right px-4 py-3 font-medium text-gray-600 whitespace-nowrap">MONTHLY REV</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">ORIGINATOR</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">CLOSER</th>
+                <th className="text-center px-4 py-3 font-medium text-gray-600 whitespace-nowrap">OWNERS</th>
               </tr>
             </thead>
             <tbody>
@@ -1104,6 +1105,16 @@ export default function DealsPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                     {renderEditableCell(deal, 'closer', deal.closer)}
+                  </td>
+                  <td className="px-4 py-3 text-center whitespace-nowrap">
+                    <Badge 
+                      variant="outline" 
+                      className="bg-teal-50 text-teal-700 border-teal-200 cursor-pointer"
+                      onClick={() => setEditingDeal(deal)}
+                      title="Click to view/edit owners"
+                    >
+                      {deal.owners?.length || 0} owner{(deal.owners?.length || 0) !== 1 ? 's' : ''}
+                    </Badge>
                   </td>
                 </motion.tr>
               ))}

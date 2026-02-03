@@ -19,7 +19,9 @@ import {
   Users, 
   MapPin, 
   Briefcase,
-  Settings
+  Settings,
+  Trash2,
+  UserPlus
 } from 'lucide-react';
 
 const originatorOptions = ['Marc Willis', 'Sarah Johnson', 'Mike Chen', 'Main Wills'];
@@ -36,8 +38,22 @@ const templateOptions = ['Standard', 'Premium', 'Custom'];
 interface Owner {
   id: string;
   name: string;
-  email: string;
+  phone: string;
+  ssn: string;
+  dateOfBirth: string;
+  homeAddress: string;
+  percentOwned: number;
 }
+
+const createEmptyOwner = (): Owner => ({
+  id: Math.random().toString(36).substring(2, 9),
+  name: '',
+  phone: '',
+  ssn: '',
+  dateOfBirth: '',
+  homeAddress: '',
+  percentOwned: 0,
+});
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -82,25 +98,18 @@ export default function NewDealPage() {
   const [purposeOfFunds, setPurposeOfFunds] = useState('');
   const [createdAt, setCreatedAt] = useState('');
 
-  const [newOwnerName, setNewOwnerName] = useState('');
-  const [newOwnerEmail, setNewOwnerEmail] = useState('');
-  const [showOwnerForm, setShowOwnerForm] = useState(false);
-
-  const handleAddOwner = () => {
-    if (newOwnerName.trim()) {
-      setOwners([...owners, { 
-        id: Date.now().toString(), 
-        name: newOwnerName.trim(), 
-        email: newOwnerEmail.trim() 
-      }]);
-      setNewOwnerName('');
-      setNewOwnerEmail('');
-      setShowOwnerForm(false);
-    }
+  const addOwner = () => {
+    setOwners([...owners, createEmptyOwner()]);
   };
 
-  const handleRemoveOwner = (id: string) => {
-    setOwners(owners.filter(o => o.id !== id));
+  const removeOwner = (ownerId: string) => {
+    setOwners(owners.filter(o => o.id !== ownerId));
+  };
+
+  const updateOwner = (ownerId: string, field: keyof Owner, value: string | number) => {
+    setOwners(owners.map(owner => 
+      owner.id === ownerId ? { ...owner, [field]: value } : owner
+    ));
   };
 
   const handleSave = () => {
@@ -378,78 +387,136 @@ export default function NewDealPage() {
       <motion.div variants={itemVariants}>
         <Card>
           <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                  <UserPlus className="w-5 h-5 text-teal-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Owner Information</CardTitle>
+                  <CardDescription>Add business owners and their details</CardDescription>
+                </div>
+              </div>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={addOwner}
+                className="cursor-pointer"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add Owner
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {owners.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 border-2 border-dashed rounded-lg">
+                <UserPlus className="w-10 h-10 mx-auto mb-3 text-gray-400" />
+                <p className="text-sm font-medium">No owners added yet</p>
+                <p className="text-xs text-gray-400 mt-1">Click "Add Owner" to add business owner information</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {owners.map((owner, index) => (
+                  <div key={owner.id} className="border rounded-lg p-4 bg-gray-50/50">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-medium text-gray-900">Owner {index + 1}</h4>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeOwner(owner.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Owner Name</Label>
+                        <Input
+                          value={owner.name}
+                          onChange={(e) => updateOwner(owner.id, 'name', e.target.value)}
+                          placeholder="Full legal name"
+                          className={inputClassName}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Phone Number</Label>
+                        <Input
+                          value={owner.phone}
+                          onChange={(e) => updateOwner(owner.id, 'phone', e.target.value)}
+                          placeholder="(XXX) XXX-XXXX"
+                          className={inputClassName}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">SSN</Label>
+                        <Input
+                          value={owner.ssn}
+                          onChange={(e) => updateOwner(owner.id, 'ssn', e.target.value)}
+                          placeholder="XXX-XX-XXXX"
+                          className={inputClassName}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">% Owned</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={owner.percentOwned}
+                          onChange={(e) => updateOwner(owner.id, 'percentOwned', parseFloat(e.target.value) || 0)}
+                          placeholder="0-100"
+                          className={inputClassName}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Date of Birth</Label>
+                        <Input
+                          type="date"
+                          value={owner.dateOfBirth}
+                          onChange={(e) => updateOwner(owner.id, 'dateOfBirth', e.target.value)}
+                          className={inputClassName}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-700">Home Address</Label>
+                        <Input
+                          value={owner.homeAddress}
+                          onChange={(e) => updateOwner(owner.id, 'homeAddress', e.target.value)}
+                          placeholder="Full home address"
+                          className={inputClassName}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                 <Users className="w-5 h-5 text-orange-600" />
               </div>
               <div>
-                <CardTitle className="text-lg">Owners & Team</CardTitle>
-                <CardDescription>Add business owners and assign team members</CardDescription>
+                <CardTitle className="text-lg">Team Assignment</CardTitle>
+                <CardDescription>Assign team members to this deal</CardDescription>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Business Owners</Label>
-              <div className="border border-gray-200 rounded-xl overflow-hidden">
-                {owners.length === 0 && !showOwnerForm ? (
-                  <div className="p-6 text-center text-sm text-gray-500 bg-gray-50">
-                    No owners added yet
-                  </div>
-                ) : (
-                  <div className="divide-y">
-                    {owners.map((owner) => (
-                      <div key={owner.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
-                        <div>
-                          <p className="font-medium text-gray-900">{owner.name}</p>
-                          {owner.email && <p className="text-sm text-gray-500">{owner.email}</p>}
-                        </div>
-                        <button 
-                          onClick={() => handleRemoveOwner(owner.id)} 
-                          className="text-gray-400 hover:text-red-500 p-1 cursor-pointer"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {showOwnerForm ? (
-                  <div className="p-4 bg-gray-50 border-t space-y-3">
-                    <Input
-                      placeholder="Owner name"
-                      value={newOwnerName}
-                      onChange={(e) => setNewOwnerName(e.target.value)}
-                      className={inputClassName}
-                    />
-                    <Input
-                      placeholder="Owner email (optional)"
-                      value={newOwnerEmail}
-                      onChange={(e) => setNewOwnerEmail(e.target.value)}
-                      className={inputClassName}
-                    />
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={handleAddOwner} className="cursor-pointer">
-                        <Check className="w-4 h-4 mr-1" />
-                        Add Owner
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setShowOwnerForm(false)} className="cursor-pointer">
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowOwnerForm(true)}
-                    className="w-full p-4 border-t text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2 cursor-pointer font-medium"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Owner
-                  </button>
-                )}
-              </div>
-            </div>
-
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-gray-700">Closers</Label>
               <p className="text-xs text-gray-500">Additional users who can access this deal</p>
