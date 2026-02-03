@@ -1,15 +1,77 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
   Search, Download, ChevronLeft, ChevronRight, Check, Minus,
-  Send, Filter, X
+  Send, Filter, X, ChevronDown
 } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
+
+interface StatusDropdownProps {
+  value: string;
+  options: string[];
+  getColor: (status: string) => string;
+  onChange: (value: string) => void;
+}
+
+function StatusDropdown({ value, options, getColor, onChange }: StatusDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className={`h-8 px-3 rounded text-sm cursor-pointer w-full flex items-center justify-between gap-2 ${getColor(value)}`}
+      >
+        <span>{value.charAt(0).toUpperCase() + value.slice(1)}</span>
+        <ChevronDown className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.15 }}
+            className="absolute z-50 mt-1 w-full bg-white border rounded-lg shadow-lg py-1 min-w-[120px]"
+          >
+            {options.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => {
+                  onChange(opt);
+                  setOpen(false);
+                }}
+                className={`w-full px-3 py-1.5 text-left text-sm hover:bg-gray-50 flex items-center gap-2 cursor-pointer ${value === opt ? 'bg-gray-50' : ''}`}
+              >
+                <span className={`px-2 py-0.5 rounded text-xs ${getColor(opt)}`}>
+                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                </span>
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 interface Submission {
   id: number;
@@ -688,15 +750,12 @@ export default function SubmissionsPage() {
                   </td>
                   
                   <td className="px-4 py-3">
-                    <select
+                    <StatusDropdown
                       value={submission.status}
-                      onChange={(e) => updateField(submission.id, 'status', e.target.value)}
-                      className={`h-8 px-2 rounded text-sm cursor-pointer w-full ${getStatusColor(submission.status)}`}
-                    >
-                      {statusOptions.map((opt) => (
-                        <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>
-                      ))}
-                    </select>
+                      options={statusOptions}
+                      getColor={getStatusColor}
+                      onChange={(val) => updateField(submission.id, 'status', val)}
+                    />
                   </td>
                   
                   <td className="px-4 py-3 text-gray-600 text-xs max-w-[300px]">
