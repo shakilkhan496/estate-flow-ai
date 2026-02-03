@@ -1503,7 +1503,13 @@ export default function DealsPage() {
       </motion.div>
 
       {viewMode === 'pipeline' ? (
-        <motion.div variants={itemVariants} className="bg-white border rounded-lg">
+        <motion.div 
+          key="pipeline-view"
+          variants={itemVariants} 
+          initial="hidden"
+          animate="visible"
+          className="bg-white border rounded-lg"
+        >
           <div 
             id="pipeline-header"
             className="flex gap-3 p-4 pb-2 mx-12 overflow-x-auto sticky top-0 bg-white z-10 border-b rounded-t-lg scrollbar-hide"
@@ -1582,7 +1588,13 @@ export default function DealsPage() {
           </div>
         </motion.div>
       ) : (
-        <motion.div variants={itemVariants} className="bg-white rounded-lg border overflow-hidden">
+        <motion.div 
+          key="table-view"
+          variants={itemVariants} 
+          initial="hidden"
+          animate="visible"
+          className="bg-white rounded-lg border overflow-hidden"
+        >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
