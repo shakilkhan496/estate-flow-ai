@@ -1,12 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { Plus, Search, Download, Upload, MoreVertical, Check, X } from 'lucide-react';
+import { 
+  Plus, Search, Download, Upload, MoreVertical, Check, X, 
+  Building2, Users, MapPin, FileText, Settings
+} from 'lucide-react';
 
 interface Deal {
   id: number;
@@ -212,6 +217,10 @@ const initialDeals: Deal[] = [
 
 const statusOptionsList = ['Ready to Submit', 'Pending', 'Processing', 'Approved', 'Funded', 'Declined', 'Withdrawn'];
 const flagOptionsList = ['Awaiting Additional Documents', 'Stiplisted', 'Priority', 'VIP Client', 'Needs Review'];
+const originatorOptionsList = ['Main Wills', 'Sarah Johnson', 'Mike Chen', 'Marc Willis'];
+const closerOptionsList = ['Tom Brown', 'Lisa Wong', 'David Miller'];
+const industryOptions = ['Restaurant', 'Retail', 'Construction', 'Healthcare', 'Transportation', 'Technology', 'Manufacturing', 'Other'];
+const legalStructureOptions = ['LLC', 'Corporation', 'Sole Proprietorship', 'Partnership', 'S-Corp', 'C-Corp'];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -233,6 +242,290 @@ type EditingField = {
   field: string;
 } | null;
 
+interface EditModalProps {
+  deal: Deal;
+  onClose: () => void;
+  onSave: (updatedDeal: Deal) => void;
+}
+
+function EditDealModal({ deal, onClose, onSave }: EditModalProps) {
+  const [formData, setFormData] = useState<Deal>({ ...deal });
+
+  const handleChange = (field: keyof Deal, value: string | string[] | number | null) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const handleSave = () => {
+    onSave(formData);
+    onClose();
+  };
+
+  const toggleFlag = (flag: string) => {
+    const hasFlag = formData.flags.includes(flag);
+    const newFlags = hasFlag 
+      ? formData.flags.filter(f => f !== flag)
+      : [...formData.flags, flag];
+    handleChange('flags', newFlags);
+  };
+
+  const selectClassName = "w-full h-10 px-3 border border-gray-200 rounded-lg text-sm bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const inputClassName = "h-10 border-gray-200";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto py-8"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="bg-gray-50 rounded-xl shadow-2xl w-full max-w-3xl mx-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 bg-white border-b px-6 py-4 rounded-t-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <FileText className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Edit Deal</h2>
+              <p className="text-sm text-gray-500">{formData.dealId} - {formData.company}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Building2 className="w-4 h-4 text-green-600" />
+                </div>
+                <CardTitle className="text-base">Business Information</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Company Name</Label>
+                  <Input
+                    value={formData.company}
+                    onChange={(e) => handleChange('company', e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Deal ID</Label>
+                  <Input
+                    value={formData.dealId}
+                    onChange={(e) => handleChange('dealId', e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">DBA</Label>
+                  <Input
+                    value={formData.dba}
+                    onChange={(e) => handleChange('dba', e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Owner</Label>
+                  <Input
+                    value={formData.owner}
+                    onChange={(e) => handleChange('owner', e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Phone</Label>
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) => handleChange('phone', e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Email</Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleChange('email', e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Settings className="w-4 h-4 text-purple-600" />
+                </div>
+                <CardTitle className="text-base">Status & Flags</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Status</Label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => handleChange('status', e.target.value)}
+                  className={selectClassName}
+                >
+                  {statusOptionsList.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Flags</Label>
+                <div className="flex flex-wrap gap-2">
+                  {flagOptionsList.map((flag) => (
+                    <Badge
+                      key={flag}
+                      variant={formData.flags.includes(flag) ? 'default' : 'outline'}
+                      className={`cursor-pointer ${formData.flags.includes(flag) ? 'bg-blue-600' : ''}`}
+                      onClick={() => toggleFlag(flag)}
+                    >
+                      {flag}
+                      {formData.flags.includes(flag) && <Check className="w-3 h-3 ml-1" />}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Users className="w-4 h-4 text-orange-600" />
+                </div>
+                <CardTitle className="text-base">Team Assignment</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Originator</Label>
+                  <select
+                    value={formData.originator}
+                    onChange={(e) => handleChange('originator', e.target.value)}
+                    className={selectClassName}
+                  >
+                    {originatorOptionsList.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Closer</Label>
+                  <select
+                    value={formData.closer}
+                    onChange={(e) => handleChange('closer', e.target.value)}
+                    className={selectClassName}
+                  >
+                    <option value="">Select...</option>
+                    {closerOptionsList.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                </div>
+                <CardTitle className="text-base">Additional Details</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Products</Label>
+                  <Input
+                    value={formData.products}
+                    onChange={(e) => handleChange('products', e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Notes</Label>
+                  <Input
+                    value={formData.notes}
+                    onChange={(e) => handleChange('notes', e.target.value)}
+                    className={inputClassName}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">GURL</Label>
+                  <Input
+                    type="number"
+                    value={formData.gurl}
+                    onChange={(e) => handleChange('gurl', parseInt(e.target.value) || 0)}
+                    className={inputClassName}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Max Offer</Label>
+                  <Input
+                    type="number"
+                    value={formData.maxOffer || ''}
+                    onChange={(e) => handleChange('maxOffer', e.target.value ? parseFloat(e.target.value) : null)}
+                    className={inputClassName}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">Monthly Revenue</Label>
+                  <Input
+                    type="number"
+                    value={formData.monthlyRev || ''}
+                    onChange={(e) => handleChange('monthlyRev', e.target.value ? parseFloat(e.target.value) : null)}
+                    className={inputClassName}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="sticky bottom-0 bg-white border-t px-6 py-4 rounded-b-xl flex items-center justify-end gap-3">
+          <Button variant="outline" onClick={onClose} className="cursor-pointer">
+            Cancel
+          </Button>
+          <Button onClick={handleSave} className="cursor-pointer bg-blue-600 hover:bg-blue-700">
+            <Check className="w-4 h-4 mr-2" />
+            Save Changes
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function DealsPage() {
   const [deals, setDeals] = useState<Deal[]>(initialDeals);
   const [searchQuery, setSearchQuery] = useState('');
@@ -245,6 +538,7 @@ export default function DealsPage() {
   
   const [editing, setEditing] = useState<EditingField>(null);
   const [editValue, setEditValue] = useState('');
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
 
   const filteredDeals = deals.filter((deal) => {
     const matchesSearch = !searchQuery || 
@@ -348,6 +642,12 @@ export default function DealsPage() {
     return editing?.dealId === dealId && editing?.field === field;
   };
 
+  const handleSaveDeal = (updatedDeal: Deal) => {
+    setDeals(deals.map(deal => 
+      deal.id === updatedDeal.id ? updatedDeal : deal
+    ));
+  };
+
   const renderEditableCell = (deal: Deal, field: keyof Deal, displayValue: string) => {
     if (isEditing(deal.id, field)) {
       return (
@@ -389,6 +689,16 @@ export default function DealsPage() {
       animate="visible"
       className="space-y-4"
     >
+      <AnimatePresence>
+        {editingDeal && (
+          <EditDealModal
+            deal={editingDeal}
+            onClose={() => setEditingDeal(null)}
+            onSave={handleSaveDeal}
+          />
+        )}
+      </AnimatePresence>
+
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">Deals</h1>
         <div className="flex items-center gap-2">
@@ -480,6 +790,7 @@ export default function DealsPage() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
+                <th className="w-10 px-2 py-3"></th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[180px] max-w-[180px]">COMPANY</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[80px]">Deal</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[120px]">STATUS</th>
@@ -499,7 +810,6 @@ export default function DealsPage() {
                 <th className="text-right px-4 py-3 font-medium text-gray-600 whitespace-nowrap">MONTHLY REV</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">ORIGINATOR</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">CLOSER</th>
-                <th className="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
@@ -509,6 +819,16 @@ export default function DealsPage() {
                   variants={itemVariants}
                   className={`border-b hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
                 >
+                  <td className="px-2 py-3">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 cursor-pointer hover:bg-gray-200"
+                      onClick={() => setEditingDeal(deal)}
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </td>
                   <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap min-w-[180px] max-w-[180px]">
                     <div className="truncate" title={deal.company}>
                       {isEditing(deal.id, 'company') ? (
@@ -619,11 +939,6 @@ export default function DealsPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
                     {renderEditableCell(deal, 'closer', deal.closer)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
                   </td>
                 </motion.tr>
               ))}
