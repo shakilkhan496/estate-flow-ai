@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link';
 import { 
   Plus, Search, Download, Upload, MoreVertical, Check, X, 
-  Building2, Users, MapPin, FileText, Settings, Trash2, UserPlus
+  Building2, Users, MapPin, FileText, Settings, Trash2, UserPlus,
+  LayoutGrid, Table2, ChevronLeft, ChevronRight, User, Clock, MoreHorizontal
 } from 'lucide-react';
 
 interface Owner {
@@ -244,7 +245,25 @@ const initialDeals: Deal[] = [
   },
 ];
 
-const statusOptionsList = ['Ready to Submit', 'Pending', 'Processing', 'Approved', 'Funded', 'Declined', 'Withdrawn'];
+const pipelineStages = [
+  { id: 'new-application', name: 'New Application', color: 'bg-blue-500' },
+  { id: 'missing-documents', name: 'Missing Documents', color: 'bg-orange-500' },
+  { id: 'ready-to-submit', name: 'Ready to Submit', color: 'bg-yellow-500' },
+  { id: 'submitted', name: 'Submitted', color: 'bg-purple-500' },
+  { id: 'resubmitting', name: 'Resubmitting', color: 'bg-pink-500' },
+  { id: 'approved', name: 'Approved', color: 'bg-green-500' },
+  { id: 'offer-selected', name: 'Offer Selected', color: 'bg-teal-500' },
+  { id: 'offer-pitched', name: 'Offer Pitched', color: 'bg-cyan-500' },
+  { id: 'repricing', name: 'Repricing', color: 'bg-indigo-500' },
+  { id: 'offer-accepted', name: 'Offer Accepted', color: 'bg-emerald-500' },
+  { id: 'received-dl-vc', name: 'Received DL/VC', color: 'bg-lime-500' },
+  { id: 'contracts-requested', name: 'Contracts Requested', color: 'bg-amber-500' },
+  { id: 'contracts-sent', name: 'Contracts Sent', color: 'bg-rose-500' },
+  { id: 'contracts-signed', name: 'Contracts Signed', color: 'bg-sky-500' },
+  { id: 'final-review', name: 'Final Review', color: 'bg-violet-500' },
+];
+
+const statusOptionsList = ['New Application', 'Missing Documents', 'Ready to Submit', 'Submitted', 'Resubmitting', 'Approved', 'Offer Selected', 'Offer Pitched', 'Repricing', 'Offer Accepted', 'Received DL/VC', 'Contracts Requested', 'Contracts Sent', 'Contracts Signed', 'Final Review'];
 const flagOptionsList = ['Awaiting Additional Documents', 'Stiplisted', 'Priority', 'VIP Client', 'Needs Review'];
 const originatorOptionsList = ['Main Wills', 'Sarah Johnson', 'Mike Chen', 'Marc Willis'];
 const closerOptionsList = ['Tom Brown', 'Lisa Wong', 'David Miller'];
@@ -260,6 +279,129 @@ const itemVariants = {
   hidden: { opacity: 0, y: 10 },
   visible: { opacity: 1, y: 0 },
 };
+
+const cardVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1 },
+  hover: { scale: 1.02, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }
+};
+
+const normalizeStatus = (status: string): string => {
+  return status.toLowerCase().replace(/\s+/g, '-');
+};
+
+const getStageFromStatus = (status: string): string => {
+  const normalized = normalizeStatus(status);
+  const stage = pipelineStages.find(s => s.id === normalized);
+  return stage ? stage.id : 'new-application';
+};
+
+interface DealCardProps {
+  deal: Deal;
+  onDragStart: (e: React.DragEvent, deal: Deal) => void;
+  onEdit: (deal: Deal) => void;
+}
+
+function DealCard({ deal, onDragStart, onEdit }: DealCardProps) {
+  const formatAmount = (value: number | null) => {
+    if (value === null) return null;
+    if (value === 0) return '$0.00';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  };
+
+  return (
+    <motion.div
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+      draggable
+      onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, deal)}
+      className="bg-white border rounded-lg p-3 cursor-grab active:cursor-grabbing shadow-sm hover:shadow-md transition-shadow"
+    >
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex-1 min-w-0">
+          <h4 className="font-medium text-gray-900 text-sm truncate" title={deal.company}>
+            {deal.company}
+          </h4>
+          {deal.maxOffer !== null && deal.maxOffer > 0 && (
+            <p className="text-sm font-semibold text-green-600 mt-0.5">
+              {formatAmount(deal.maxOffer)}
+            </p>
+          )}
+        </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-6 w-6 p-0 cursor-pointer shrink-0"
+          onClick={(e) => { e.stopPropagation(); onEdit(deal); }}
+        >
+          <MoreHorizontal className="w-4 h-4 text-gray-400" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-2 text-xs text-gray-500">
+        <User className="w-3 h-3" />
+        <span className="truncate">{deal.owner}</span>
+      </div>
+      <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
+        <Clock className="w-3 h-3" />
+        <span>{deal.dateCreated}</span>
+      </div>
+    </motion.div>
+  );
+}
+
+interface PipelineColumnProps {
+  stage: typeof pipelineStages[0];
+  deals: Deal[];
+  onDragStart: (e: React.DragEvent, deal: Deal) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent, stageId: string) => void;
+  onEdit: (deal: Deal) => void;
+  totalAmount: number;
+}
+
+function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit, totalAmount }: PipelineColumnProps) {
+  const formatAmount = (value: number) => {
+    if (value === 0) return null;
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+  };
+
+  return (
+    <div 
+      className="flex-shrink-0 w-[280px] bg-gray-50 rounded-lg flex flex-col max-h-full"
+      onDragOver={onDragOver}
+      onDrop={(e) => onDrop(e, stage.id)}
+    >
+      <div className="p-3 border-b bg-white rounded-t-lg">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${stage.color}`} />
+            <h3 className="font-medium text-gray-900 text-sm">{stage.name}</h3>
+          </div>
+          <Badge variant="secondary" className="text-xs">
+            {deals.length}
+          </Badge>
+        </div>
+        {totalAmount > 0 && (
+          <p className="text-xs text-gray-500">{formatAmount(totalAmount)}</p>
+        )}
+      </div>
+      <div className="flex-1 overflow-y-auto p-2 space-y-2 min-h-[200px]">
+        <AnimatePresence>
+          {deals.map((deal) => (
+            <DealCard key={deal.id} deal={deal} onDragStart={onDragStart} onEdit={onEdit} />
+          ))}
+        </AnimatePresence>
+        {deals.length === 0 && (
+          <div className="flex items-center justify-center h-20 text-xs text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+            Drop deals here
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const statusOptions = ['All', 'Ready to Submit', 'Pending', 'Processing', 'Approved', 'Funded', 'Declined', 'Withdrawn'];
 const flagOptions = ['All', 'Awaiting Additional Documents', 'Stiplisted', 'Priority', 'VIP Client', 'Needs Review'];
@@ -704,6 +846,9 @@ export default function DealsPage() {
   const [editing, setEditing] = useState<EditingField>(null);
   const [editValue, setEditValue] = useState('');
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+  
+  const [viewMode, setViewMode] = useState<'table' | 'pipeline'>('table');
+  const [draggedDeal, setDraggedDeal] = useState<Deal | null>(null);
 
   const filteredDeals = deals.filter((deal) => {
     const matchesSearch = !searchQuery || 
@@ -813,6 +958,49 @@ export default function DealsPage() {
     ));
   };
 
+  const handleDragStart = (e: React.DragEvent, deal: Deal) => {
+    setDraggedDeal(deal);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, stageId: string) => {
+    e.preventDefault();
+    if (draggedDeal) {
+      const newStatus = pipelineStages.find(s => s.id === stageId)?.name || draggedDeal.status;
+      setDeals(prev => prev.map(deal => 
+        deal.id === draggedDeal.id ? { ...deal, status: newStatus } : deal
+      ));
+      setDraggedDeal(null);
+    }
+  };
+
+  const getDealsByStage = (stageId: string) => {
+    return filteredDeals.filter(deal => getStageFromStatus(deal.status) === stageId);
+  };
+
+  const getStageTotal = (stageId: string) => {
+    return getDealsByStage(stageId).reduce((sum, deal) => sum + (deal.maxOffer || 0), 0);
+  };
+
+  const scrollLeft = () => {
+    const container = document.getElementById('pipeline-container');
+    if (container) {
+      container.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    const container = document.getElementById('pipeline-container');
+    if (container) {
+      container.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
+
   const renderEditableCell = (deal: Deal, field: keyof Deal, displayValue: string) => {
     if (isEditing(deal.id, field)) {
       return (
@@ -865,8 +1053,33 @@ export default function DealsPage() {
       </AnimatePresence>
 
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Deals</h1>
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Deals</h1>
+          {viewMode === 'pipeline' && (
+            <p className="text-sm text-gray-500 mt-1">Drag and drop deals between stages</p>
+          )}
+        </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center bg-gray-100 rounded-lg p-1">
+            <Button 
+              variant={viewMode === 'table' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setViewMode('table')}
+              className={`cursor-pointer h-7 px-3 ${viewMode === 'table' ? 'bg-white shadow-sm' : ''}`}
+            >
+              <Table2 className="w-4 h-4 mr-1" />
+              Table
+            </Button>
+            <Button 
+              variant={viewMode === 'pipeline' ? 'default' : 'ghost'} 
+              size="sm" 
+              onClick={() => setViewMode('pipeline')}
+              className={`cursor-pointer h-7 px-3 ${viewMode === 'pipeline' ? 'bg-white shadow-sm' : ''}`}
+            >
+              <LayoutGrid className="w-4 h-4 mr-1" />
+              Pipeline
+            </Button>
+          </div>
           <Button variant="outline" size="sm" className="cursor-pointer">
             <Upload className="w-4 h-4 mr-1" />
             Import
@@ -950,9 +1163,48 @@ export default function DealsPage() {
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="bg-white rounded-lg border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+      {viewMode === 'pipeline' ? (
+        <motion.div variants={itemVariants} className="flex-1 relative bg-white border rounded-lg overflow-hidden" style={{ minHeight: '500px' }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={scrollLeft}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={scrollRight}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 p-0 rounded-full shadow-lg bg-white cursor-pointer"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+
+          <div 
+            id="pipeline-container"
+            className="flex gap-3 p-4 overflow-x-auto h-full scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+            style={{ scrollBehavior: 'smooth' }}
+          >
+            {pipelineStages.map((stage) => (
+              <PipelineColumn
+                key={stage.id}
+                stage={stage}
+                deals={getDealsByStage(stage.id)}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onEdit={(deal) => setEditingDeal(deal)}
+                totalAmount={getStageTotal(stage.id)}
+              />
+            ))}
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div variants={itemVariants} className="bg-white rounded-lg border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="w-10 px-2 py-3"></th>
@@ -1132,8 +1384,9 @@ export default function DealsPage() {
           </div>
         </div>
       </motion.div>
+      )}
 
-      {filteredDeals.length === 0 && (
+      {filteredDeals.length === 0 && viewMode === 'table' && (
         <motion.div variants={itemVariants} className="text-center py-12 bg-white rounded-lg border">
           <p className="text-gray-500">No deals found matching your criteria.</p>
         </motion.div>

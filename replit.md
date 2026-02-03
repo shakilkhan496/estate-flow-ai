@@ -18,8 +18,7 @@ app/
 ├── dashboard/             # Protected dashboard pages
 │   ├── page.tsx           # Dashboard home
 │   ├── layout.tsx         # Dashboard layout with sidebar
-│   ├── pipeline/          # Kanban pipeline view
-│   ├── deals/             # Deals table view
+│   ├── deals/             # Deals with Table & Pipeline views
 │   ├── documents/         # Documents management page
 │   ├── team/              # Team management page
 │   ├── settings/          # Settings page
@@ -69,8 +68,9 @@ src/
 
 ## Dashboard Pages
 - **Dashboard** - Overview with stats and recent deals
-- **Pipeline** - Kanban board view with 15 stages (New Application, Missing Documents, Ready to Submit, Submitted, Resubmitting, Approved, Offer Selected, Offer Pitched, Repricing, Offer Accepted, Received DL/VC, Contracts Requested, Contracts Sent, Contracts Signed, Final Review). Drag-and-drop deals between stages.
-- **Deals** - Deal table view with full columns (Company, Deal ID, Status, Flags, DBA, Owner, Phone, Email, Products, Notes, Originators, Closers, Date Created/Updated, GURL, Max Offer, Monthly Rev, Owners count)
+- **Deals** - Combined view with toggle between Table and Pipeline modes:
+  - **Table View** - Full spreadsheet with columns (Company, Deal ID, Status, Flags, DBA, Owner, Phone, Email, Products, Notes, Originators, Closers, Date Created/Updated, GURL, Max Offer, Monthly Rev, Owners count)
+  - **Pipeline View** - Kanban board with 15 stages (New Application, Missing Documents, Ready to Submit, Submitted, Resubmitting, Approved, Offer Selected, Offer Pitched, Repricing, Offer Accepted, Received DL/VC, Contracts Requested, Contracts Sent, Contracts Signed, Final Review). Drag-and-drop deals between stages.
 - **Documents** - Document management with file listings
 - **Team** - Team member cards with stats (Admin/Manager only)
 - **Settings** - Account, notifications, security settings
