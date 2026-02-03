@@ -70,7 +70,12 @@ src/
 - **Dashboard** - Overview with stats and recent deals
 - **Deals** - Combined view with toggle between Table and Pipeline modes:
   - **Table View** - Full spreadsheet with columns (Company, Deal ID, Status, Flags, DBA, Owner, Phone, Email, Products, Notes, Originators, Closers, Date Created/Updated, GURL, Max Offer, Monthly Rev, Owners count)
-  - **Pipeline View** - Kanban board with 15 stages (New Application, Missing Documents, Ready to Submit, Submitted, Resubmitting, Approved, Offer Selected, Offer Pitched, Repricing, Offer Accepted, Received DL/VC, Contracts Requested, Contracts Sent, Contracts Signed, Final Review). Drag-and-drop deals between stages.
+  - **Pipeline View** - Kanban board with 15 stages (New Application, Missing Documents, Ready to Submit, Submitted, Resubmitting, Approved, Offer Selected, Offer Pitched, Repricing, Offer Accepted, Received DL/VC, Contracts Requested, Contracts Sent, Contracts Signed, Final Review). Features include:
+    - Drag-and-drop deals between stages
+    - Compact/Expanded card toggle (show just company name or full details)
+    - Last activity timestamps on deal cards
+    - Stage transition history tracking (records when deals move between stages)
+    - Sticky stage headers with synchronized horizontal scrolling
 - **Documents** - Document management with file listings
 - **Team** - Team member cards with stats (Admin/Manager only)
 - **Settings** - Account, notifications, security settings

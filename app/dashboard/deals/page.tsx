@@ -11,7 +11,8 @@ import Link from 'next/link';
 import { 
   Plus, Search, Download, Upload, MoreVertical, Check, X, 
   Building2, Users, MapPin, FileText, Settings, Trash2, UserPlus,
-  LayoutGrid, Table2, ChevronLeft, ChevronRight, User, Clock, MoreHorizontal
+  LayoutGrid, Table2, ChevronLeft, ChevronRight, User, Clock, MoreHorizontal,
+  History, Minimize2, Maximize2, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 interface Owner {
@@ -22,6 +23,12 @@ interface Owner {
   dateOfBirth: string;
   homeAddress: string;
   percentOwned: number;
+}
+
+interface StageTransition {
+  fromStage: string;
+  toStage: string;
+  timestamp: string;
 }
 
 interface Deal {
@@ -46,6 +53,8 @@ interface Deal {
   originator: string;
   closer: string;
   owners: Owner[];
+  lastActivity: string;
+  stageHistory: StageTransition[];
 }
 
 const createEmptyOwner = (): Owner => ({
@@ -81,6 +90,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [{ id: '1', name: 'Cesar Carmen', phone: '', ssn: '', dateOfBirth: '', homeAddress: '', percentOwned: 100 }],
+    lastActivity: '23 hours ago',
+    stageHistory: [{ fromStage: 'New Application', toStage: 'Declined', timestamp: '23 hours ago' }],
   },
   {
     id: 2,
@@ -104,6 +115,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 3,
@@ -127,6 +140,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 4,
@@ -150,6 +165,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 5,
@@ -173,6 +190,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 6,
@@ -196,6 +215,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 7,
@@ -219,6 +240,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 8,
@@ -242,6 +265,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 9,
@@ -265,6 +290,8 @@ const initialDeals: Deal[] = [
     originator: 'Marc Willis',
     closer: '',
     owners: [{ id: '9a', name: 'Maria Santos', phone: '(555) 123-4567', ssn: '', dateOfBirth: '', homeAddress: '', percentOwned: 100 }],
+    lastActivity: '1 day ago',
+    stageHistory: [],
   },
   {
     id: 10,
@@ -288,6 +315,8 @@ const initialDeals: Deal[] = [
     originator: 'Sarah Johnson',
     closer: '',
     owners: [{ id: '10a', name: 'James Wilson', phone: '(555) 234-5678', ssn: '', dateOfBirth: '', homeAddress: '', percentOwned: 100 }],
+    lastActivity: '2 days ago',
+    stageHistory: [],
   },
   {
     id: 11,
@@ -311,6 +340,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 12,
@@ -334,6 +365,8 @@ const initialDeals: Deal[] = [
     originator: 'Mike Chen',
     closer: '',
     owners: [{ id: '12a', name: 'Robert Taylor', phone: '(555) 456-7890', ssn: '', dateOfBirth: '', homeAddress: '', percentOwned: 60 }, { id: '12b', name: 'Susan Taylor', phone: '(555) 456-7891', ssn: '', dateOfBirth: '', homeAddress: '', percentOwned: 40 }],
+    lastActivity: '4 days ago',
+    stageHistory: [],
   },
   {
     id: 13,
@@ -357,6 +390,8 @@ const initialDeals: Deal[] = [
     originator: 'Marc Willis',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 14,
@@ -380,6 +415,8 @@ const initialDeals: Deal[] = [
     originator: 'Sarah Johnson',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 15,
@@ -403,6 +440,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 16,
@@ -426,6 +465,8 @@ const initialDeals: Deal[] = [
     originator: 'Mike Chen',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 17,
@@ -449,6 +490,8 @@ const initialDeals: Deal[] = [
     originator: 'Marc Willis',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 18,
@@ -472,6 +515,8 @@ const initialDeals: Deal[] = [
     originator: 'Sarah Johnson',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 19,
@@ -495,6 +540,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 20,
@@ -518,6 +565,8 @@ const initialDeals: Deal[] = [
     originator: 'Mike Chen',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 21,
@@ -541,6 +590,8 @@ const initialDeals: Deal[] = [
     originator: 'Marc Willis',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 22,
@@ -564,6 +615,8 @@ const initialDeals: Deal[] = [
     originator: 'Sarah Johnson',
     closer: '',
     owners: [],
+    lastActivity: '2 hours ago',
+    stageHistory: [],
   },
   {
     id: 23,
@@ -587,6 +640,8 @@ const initialDeals: Deal[] = [
     originator: 'Main Wills',
     closer: '',
     owners: [{ id: '23a', name: 'William Harris', phone: '(555) 555-6666', ssn: '', dateOfBirth: '', homeAddress: '', percentOwned: 50 }, { id: '23b', name: 'John Harris', phone: '(555) 555-6667', ssn: '', dateOfBirth: '', homeAddress: '', percentOwned: 50 }],
+    lastActivity: '2 months ago',
+    stageHistory: [],
   },
 ];
 
@@ -645,14 +700,42 @@ interface DealCardProps {
   deal: Deal;
   onDragStart: (e: React.DragEvent, deal: Deal) => void;
   onEdit: (deal: Deal) => void;
+  isCompact: boolean;
 }
 
-function DealCard({ deal, onDragStart, onEdit }: DealCardProps) {
+function DealCard({ deal, onDragStart, onEdit, isCompact }: DealCardProps) {
+  const [showHistory, setShowHistory] = useState(false);
+  
   const formatAmount = (value: number | null) => {
     if (value === null) return null;
     if (value === 0) return '$0.00';
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
   };
+
+  if (isCompact) {
+    return (
+      <motion.div
+        variants={cardVariants}
+        initial="hidden"
+        animate="visible"
+        whileHover="hover"
+        draggable
+        onDragStart={(e) => onDragStart(e as unknown as React.DragEvent, deal)}
+        className="bg-white border rounded-lg px-3 py-2 cursor-grab active:cursor-grabbing shadow-sm hover:shadow-md transition-shadow"
+      >
+        <div className="flex items-center justify-between">
+          <h4 className="font-medium text-gray-900 text-sm truncate flex-1" title={deal.company}>
+            {deal.company}
+          </h4>
+          {deal.maxOffer !== null && deal.maxOffer > 0 && (
+            <span className="text-xs font-semibold text-green-600 ml-2">
+              {formatAmount(deal.maxOffer)}
+            </span>
+          )}
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -690,8 +773,43 @@ function DealCard({ deal, onDragStart, onEdit }: DealCardProps) {
       </div>
       <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
         <Clock className="w-3 h-3" />
-        <span>{deal.dateCreated}</span>
+        <span>Last activity: {deal.lastActivity}</span>
       </div>
+      
+      {deal.stageHistory.length > 0 && (
+        <div className="mt-2 pt-2 border-t">
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowHistory(!showHistory); }}
+            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
+          >
+            <History className="w-3 h-3" />
+            <span>Stage History ({deal.stageHistory.length})</span>
+            {showHistory ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+          
+          <AnimatePresence>
+            {showHistory && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-2 space-y-1">
+                  {deal.stageHistory.map((transition, idx) => (
+                    <div key={idx} className="text-xs text-gray-500 flex items-center gap-1">
+                      <span className="text-gray-400">{transition.fromStage}</span>
+                      <span className="text-gray-400">→</span>
+                      <span className="font-medium text-gray-600">{transition.toStage}</span>
+                      <span className="text-gray-300 ml-auto">{transition.timestamp}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -704,9 +822,10 @@ interface PipelineColumnProps {
   onDrop: (e: React.DragEvent, stageId: string) => void;
   onEdit: (deal: Deal) => void;
   totalAmount: number;
+  isCompact: boolean;
 }
 
-function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit, totalAmount }: PipelineColumnProps) {
+function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit, totalAmount, isCompact }: PipelineColumnProps) {
   const formatAmount = (value: number) => {
     if (value === 0) return null;
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
@@ -721,7 +840,7 @@ function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit,
       <div className="p-2 space-y-2">
         <AnimatePresence>
           {deals.map((deal) => (
-            <DealCard key={deal.id} deal={deal} onDragStart={onDragStart} onEdit={onEdit} />
+            <DealCard key={deal.id} deal={deal} onDragStart={onDragStart} onEdit={onEdit} isCompact={isCompact} />
           ))}
         </AnimatePresence>
         {deals.length === 0 && (
@@ -1179,6 +1298,7 @@ export default function DealsPage() {
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   
   const [viewMode, setViewMode] = useState<'table' | 'pipeline'>('table');
+  const [isCompactView, setIsCompactView] = useState(false);
   const [draggedDeal, setDraggedDeal] = useState<Deal | null>(null);
 
   const filteredDeals = deals.filter((deal) => {
@@ -1303,9 +1423,26 @@ export default function DealsPage() {
     e.preventDefault();
     if (draggedDeal) {
       const newStatus = pipelineStages.find(s => s.id === stageId)?.name || draggedDeal.status;
-      setDeals(prev => prev.map(deal => 
-        deal.id === draggedDeal.id ? { ...deal, status: newStatus } : deal
-      ));
+      const oldStatus = draggedDeal.status;
+      
+      if (oldStatus !== newStatus) {
+        const newTransition: StageTransition = {
+          fromStage: oldStatus,
+          toStage: newStatus,
+          timestamp: 'Just now'
+        };
+        
+        setDeals(prev => prev.map(deal => 
+          deal.id === draggedDeal.id 
+            ? { 
+                ...deal, 
+                status: newStatus,
+                lastActivity: 'Just now',
+                stageHistory: [newTransition, ...deal.stageHistory]
+              } 
+            : deal
+        ));
+      }
       setDraggedDeal(null);
     }
   };
@@ -1510,9 +1647,32 @@ export default function DealsPage() {
           animate="visible"
           className="bg-white border rounded-lg"
         >
+          <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b">
+            <p className="text-sm text-gray-500">
+              {isCompactView ? 'Compact View' : 'Expanded View'} - Showing {filteredDeals.length} deals
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCompactView(!isCompactView)}
+              className="h-8 px-3 cursor-pointer flex items-center gap-2"
+            >
+              {isCompactView ? (
+                <>
+                  <Maximize2 className="w-4 h-4" />
+                  <span>Expand Cards</span>
+                </>
+              ) : (
+                <>
+                  <Minimize2 className="w-4 h-4" />
+                  <span>Compact Cards</span>
+                </>
+              )}
+            </Button>
+          </div>
           <div 
             id="pipeline-header"
-            className="flex gap-3 p-4 pb-2 mx-12 overflow-x-auto sticky top-0 bg-white z-10 border-b rounded-t-lg scrollbar-hide"
+            className="flex gap-3 p-4 pb-2 mx-12 overflow-x-auto sticky top-0 bg-white z-10 scrollbar-hide"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             onScroll={(e) => {
               const container = document.getElementById('pipeline-cards');
@@ -1582,6 +1742,7 @@ export default function DealsPage() {
                   onDrop={handleDrop}
                   onEdit={(deal) => setEditingDeal(deal)}
                   totalAmount={getStageTotal(stage.id)}
+                  isCompact={isCompactView}
                 />
               ))}
             </div>
