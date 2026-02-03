@@ -79,6 +79,7 @@ src/
     - Inline "Next" button to move deals to next stage without dragging
     - Stage collapsing - click X on stage header to collapse, click collapsed stage to expand
     - "Hide All Stages" / "Show All Stages" buttons for quick bulk collapse/expand
+- **Submissions** - Funder submission tracking with status (declined, approved, sent, errored), responses, AI flags, pagination
 - **Documents** - Document management with file listings
 - **Team** - Team member cards with stats (Admin/Manager only)
 - **Settings** - Account, notifications, security settings
