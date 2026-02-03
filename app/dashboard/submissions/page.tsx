@@ -9,13 +9,14 @@ import {
   Search, Download, ChevronLeft, ChevronRight, Check, Minus,
   Send, Filter, X
 } from 'lucide-react';
+import { useAppSelector } from '@/store/hooks';
 
 interface Submission {
   id: number;
   dealId: string;
   deal: string;
   funder: string;
-  status: 'declined' | 'approved' | 'sent' | 'errored' | 'pending';
+  status: string;
   response: string;
   error: string;
   submittedBy: string;
@@ -33,9 +34,6 @@ type EditingField = {
 } | null;
 
 const funderOptions = ['Mulligan Funding', 'Fenix', 'Forward', 'Fundworks', 'IOU', 'Fintap', 'LG', 'Radiance', 'Spartan', 'Fundkite', 'Kapitus', 'OnDeck', 'Biz2Credit', 'Wall St Funding', 'Can capital', 'Headway', 'Kalamata'];
-const originatorOptions = ['Marc Willis', 'Sarah Johnson', 'Mike Chen', 'Main Wills'];
-const closerOptions = ['Tom Brown', 'Lisa Wong', 'David Miller'];
-const statusOptions: Submission['status'][] = ['declined', 'approved', 'sent', 'errored', 'pending'];
 
 const sampleSubmissions: Submission[] = [
   {
@@ -466,14 +464,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-const statusColors: Record<Submission['status'], string> = {
-  declined: 'bg-red-100 text-red-700 border-red-200',
-  approved: 'bg-green-100 text-green-700 border-green-200',
-  sent: 'bg-blue-100 text-blue-700 border-blue-200',
-  errored: 'bg-orange-100 text-orange-700 border-orange-200',
-  pending: 'bg-gray-100 text-gray-700 border-gray-200',
-};
-
 export default function SubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>(sampleSubmissions);
   const [searchQuery, setSearchQuery] = useState('');
@@ -486,8 +476,21 @@ export default function SubmissionsPage() {
   const [editValue, setEditValue] = useState('');
   const itemsPerPage = 30;
 
+  const submissionStatusConfig = useAppSelector((state) => state.adminConfig.submissionStatuses);
+  const originatorConfig = useAppSelector((state) => state.adminConfig.originators);
+  const closerConfig = useAppSelector((state) => state.adminConfig.closers);
+
+  const originatorOptions = originatorConfig.map(o => o.value);
+  const closerOptions = closerConfig.map(c => c.value);
+  const statusOptions = submissionStatusConfig.map(s => s.value);
+
+  const getStatusColor = (status: string): string => {
+    const config = submissionStatusConfig.find(s => s.value.toLowerCase() === status.toLowerCase());
+    return config ? `${config.color} border` : 'bg-gray-100 text-gray-700 border';
+  };
+
   const funders = ['All', ...new Set(submissions.map(s => s.funder))];
-  const statuses = ['All', 'declined', 'approved', 'sent', 'errored', 'pending'];
+  const statuses = ['All', ...statusOptions];
 
   const filteredSubmissions = submissions.filter((sub) => {
     const matchesSearch = !searchQuery || 
@@ -687,8 +690,8 @@ export default function SubmissionsPage() {
                   <td className="px-4 py-3">
                     <select
                       value={submission.status}
-                      onChange={(e) => updateField(submission.id, 'status', e.target.value as Submission['status'])}
-                      className={`h-8 px-2 border rounded text-sm cursor-pointer w-full ${statusColors[submission.status]}`}
+                      onChange={(e) => updateField(submission.id, 'status', e.target.value)}
+                      className={`h-8 px-2 rounded text-sm cursor-pointer w-full ${getStatusColor(submission.status)}`}
                     >
                       {statusOptions.map((opt) => (
                         <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>

@@ -8,14 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Plus, X, Save, Shield, Flag, Tag, Users, Briefcase, Send, Tags } from 'lucide-react';
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { selectIsAdmin, selectIsAuthLoading } from '@/store/selectors/authSelectors';
-
-interface ConfigItem {
-  id: string;
-  value: string;
-  color: string;
-}
+import { 
+  ConfigItem, 
+  addConfigItem, 
+  removeConfigItem, 
+  updateConfigItem 
+} from '@/store/slices/adminConfigSlice';
 
 const colorOptions = [
   { name: 'Green', value: 'bg-green-100 text-green-700', preview: 'bg-green-500' },
@@ -25,61 +25,6 @@ const colorOptions = [
   { name: 'Red', value: 'bg-red-100 text-red-700', preview: 'bg-red-500' },
   { name: 'Purple', value: 'bg-purple-100 text-purple-700', preview: 'bg-purple-500' },
   { name: 'Gray', value: 'bg-gray-100 text-gray-700', preview: 'bg-gray-500' },
-];
-
-const defaultStatuses: ConfigItem[] = [
-  { id: '1', value: 'Ready to Submit', color: 'bg-blue-100 text-blue-700' },
-  { id: '2', value: 'Pending', color: 'bg-yellow-100 text-yellow-700' },
-  { id: '3', value: 'Processing', color: 'bg-yellow-100 text-yellow-700' },
-  { id: '4', value: 'Approved', color: 'bg-green-100 text-green-700' },
-  { id: '5', value: 'Funded', color: 'bg-green-100 text-green-700' },
-  { id: '6', value: 'Declined', color: 'bg-red-100 text-red-700' },
-  { id: '7', value: 'Withdrawn', color: 'bg-orange-100 text-orange-700' },
-];
-
-const defaultFlags: ConfigItem[] = [
-  { id: '1', value: 'Awaiting Additional Documents', color: 'bg-yellow-100 text-yellow-700' },
-  { id: '2', value: 'Stiplisted', color: 'bg-purple-100 text-purple-700' },
-  { id: '3', value: 'Priority', color: 'bg-red-100 text-red-700' },
-  { id: '4', value: 'VIP Client', color: 'bg-blue-100 text-blue-700' },
-  { id: '5', value: 'Needs Review', color: 'bg-orange-100 text-orange-700' },
-];
-
-const defaultProducts: ConfigItem[] = [
-  { id: '1', value: 'MCA', color: 'bg-blue-100 text-blue-700' },
-  { id: '2', value: 'Term Loan', color: 'bg-green-100 text-green-700' },
-  { id: '3', value: 'Line of Credit', color: 'bg-purple-100 text-purple-700' },
-  { id: '4', value: 'Equipment Financing', color: 'bg-orange-100 text-orange-700' },
-  { id: '5', value: 'SBA Loan', color: 'bg-gray-100 text-gray-700' },
-];
-
-const defaultOriginators: ConfigItem[] = [
-  { id: '1', value: 'Main Wills', color: 'bg-gray-100 text-gray-700' },
-  { id: '2', value: 'Sarah Johnson', color: 'bg-gray-100 text-gray-700' },
-  { id: '3', value: 'Mike Chen', color: 'bg-gray-100 text-gray-700' },
-];
-
-const defaultClosers: ConfigItem[] = [
-  { id: '1', value: 'Tom Brown', color: 'bg-gray-100 text-gray-700' },
-  { id: '2', value: 'Lisa Wong', color: 'bg-gray-100 text-gray-700' },
-  { id: '3', value: 'David Miller', color: 'bg-gray-100 text-gray-700' },
-];
-
-const defaultSubmissionStatuses: ConfigItem[] = [
-  { id: '1', value: 'declined', color: 'bg-red-100 text-red-700' },
-  { id: '2', value: 'approved', color: 'bg-green-100 text-green-700' },
-  { id: '3', value: 'sent', color: 'bg-blue-100 text-blue-700' },
-  { id: '4', value: 'errored', color: 'bg-orange-100 text-orange-700' },
-  { id: '5', value: 'pending', color: 'bg-gray-100 text-gray-700' },
-];
-
-const defaultTags: ConfigItem[] = [
-  { id: '1', value: 'Hot Lead', color: 'bg-red-100 text-red-700' },
-  { id: '2', value: 'Returning Client', color: 'bg-blue-100 text-blue-700' },
-  { id: '3', value: 'Referral', color: 'bg-green-100 text-green-700' },
-  { id: '4', value: 'High Value', color: 'bg-purple-100 text-purple-700' },
-  { id: '5', value: 'Follow Up', color: 'bg-yellow-100 text-yellow-700' },
-  { id: '6', value: 'New Business', color: 'bg-orange-100 text-orange-700' },
 ];
 
 const containerVariants = {
@@ -117,20 +62,22 @@ function ConfigSection({ title, description, icon: Icon, items, onAdd, onRemove,
     }
   };
 
-  const handleStartEdit = (item: ConfigItem) => {
+  const startEdit = (item: ConfigItem) => {
     setEditingId(item.id);
     setEditValue(item.value);
     setEditColor(item.color);
   };
 
-  const handleSaveEdit = () => {
+  const saveEdit = () => {
     if (editingId && editValue.trim()) {
       onUpdate(editingId, editValue.trim(), editColor);
       setEditingId(null);
+      setEditValue('');
+      setEditColor('');
     }
   };
 
-  const handleCancelEdit = () => {
+  const cancelEdit = () => {
     setEditingId(null);
     setEditValue('');
     setEditColor('');
@@ -138,10 +85,10 @@ function ConfigSection({ title, description, icon: Icon, items, onAdd, onRemove,
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <Icon className="w-5 h-5 text-blue-600" />
+          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+            <Icon className="w-5 h-5 text-gray-600" />
           </div>
           <div>
             <CardTitle className="text-lg">{title}</CardTitle>
@@ -149,16 +96,17 @@ function ConfigSection({ title, description, icon: Icon, items, onAdd, onRemove,
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         <div className="flex flex-wrap gap-2">
           {items.map((item) => (
             <div key={item.id} className="group relative">
               {editingId === item.id ? (
-                <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-2 p-2 border rounded-lg bg-gray-50">
                   <Input
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="h-8 w-40"
+                    className="h-8 w-32"
+                    autoFocus
                   />
                   <select
                     value={editColor}
@@ -169,17 +117,13 @@ function ConfigSection({ title, description, icon: Icon, items, onAdd, onRemove,
                       <option key={opt.name} value={opt.value}>{opt.name}</option>
                     ))}
                   </select>
-                  <Button size="sm" onClick={handleSaveEdit} className="h-8 cursor-pointer">
-                    <Save className="w-3 h-3" />
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={handleCancelEdit} className="h-8 cursor-pointer">
-                    <X className="w-3 h-3" />
-                  </Button>
+                  <Button size="sm" onClick={saveEdit} className="h-8 cursor-pointer">Save</Button>
+                  <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-8 cursor-pointer">Cancel</Button>
                 </div>
               ) : (
                 <Badge
-                  className={`${item.color} cursor-pointer hover:opacity-80 transition-opacity pr-6`}
-                  onClick={() => handleStartEdit(item)}
+                  className={`${item.color} border cursor-pointer pr-7 transition-all hover:pr-8`}
+                  onClick={() => startEdit(item)}
                 >
                   {item.value}
                   <button
@@ -187,7 +131,7 @@ function ConfigSection({ title, description, icon: Icon, items, onAdd, onRemove,
                       e.stopPropagation();
                       onRemove(item.id);
                     }}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -226,15 +170,18 @@ function ConfigSection({ title, description, icon: Icon, items, onAdd, onRemove,
 
 export default function AdminPage() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const isAdmin = useAppSelector(selectIsAdmin);
   const isLoading = useAppSelector(selectIsAuthLoading);
-  const [statuses, setStatuses] = useState<ConfigItem[]>(defaultStatuses);
-  const [flags, setFlags] = useState<ConfigItem[]>(defaultFlags);
-  const [products, setProducts] = useState<ConfigItem[]>(defaultProducts);
-  const [originators, setOriginators] = useState<ConfigItem[]>(defaultOriginators);
-  const [closers, setClosers] = useState<ConfigItem[]>(defaultClosers);
-  const [submissionStatuses, setSubmissionStatuses] = useState<ConfigItem[]>(defaultSubmissionStatuses);
-  const [tags, setTags] = useState<ConfigItem[]>(defaultTags);
+  
+  const statuses = useAppSelector((state) => state.adminConfig.statuses);
+  const flags = useAppSelector((state) => state.adminConfig.flags);
+  const products = useAppSelector((state) => state.adminConfig.products);
+  const originators = useAppSelector((state) => state.adminConfig.originators);
+  const closers = useAppSelector((state) => state.adminConfig.closers);
+  const submissionStatuses = useAppSelector((state) => state.adminConfig.submissionStatuses);
+  const tags = useAppSelector((state) => state.adminConfig.tags);
+  
   const [saveMessage, setSaveMessage] = useState('');
 
   useEffect(() => {
@@ -270,18 +217,17 @@ export default function AdminPage() {
     setTimeout(() => setSaveMessage(''), 3000);
   };
 
-  const createHandlers = (
-    items: ConfigItem[],
-    setItems: React.Dispatch<React.SetStateAction<ConfigItem[]>>
-  ) => ({
+  type ConfigKey = 'statuses' | 'flags' | 'products' | 'originators' | 'closers' | 'submissionStatuses' | 'tags';
+
+  const createHandlers = (key: ConfigKey) => ({
     onAdd: (value: string, color: string) => {
-      setItems([...items, { id: generateId(), value, color }]);
+      dispatch(addConfigItem({ key, item: { id: generateId(), value, color } }));
     },
     onRemove: (id: string) => {
-      setItems(items.filter((item) => item.id !== id));
+      dispatch(removeConfigItem({ key, id }));
     },
     onUpdate: (id: string, value: string, color: string) => {
-      setItems(items.map((item) => (item.id === id ? { ...item, value, color } : item)));
+      dispatch(updateConfigItem({ key, id, value, color }));
     },
   });
 
@@ -326,7 +272,7 @@ export default function AdminPage() {
           description="Define the status options available for deals"
           icon={Tag}
           items={statuses}
-          {...createHandlers(statuses, setStatuses)}
+          {...createHandlers('statuses')}
         />
       </motion.div>
 
@@ -336,7 +282,7 @@ export default function AdminPage() {
           description="Define flags that can be applied to deals"
           icon={Flag}
           items={flags}
-          {...createHandlers(flags, setFlags)}
+          {...createHandlers('flags')}
         />
       </motion.div>
 
@@ -346,7 +292,7 @@ export default function AdminPage() {
           description="Define the product types available"
           icon={Briefcase}
           items={products}
-          {...createHandlers(products, setProducts)}
+          {...createHandlers('products')}
         />
       </motion.div>
 
@@ -356,7 +302,7 @@ export default function AdminPage() {
           description="Manage the list of deal originators"
           icon={Users}
           items={originators}
-          {...createHandlers(originators, setOriginators)}
+          {...createHandlers('originators')}
         />
       </motion.div>
 
@@ -366,7 +312,7 @@ export default function AdminPage() {
           description="Manage the list of deal closers"
           icon={Users}
           items={closers}
-          {...createHandlers(closers, setClosers)}
+          {...createHandlers('closers')}
         />
       </motion.div>
 
@@ -376,7 +322,7 @@ export default function AdminPage() {
           description="Define the status options for funder submissions"
           icon={Send}
           items={submissionStatuses}
-          {...createHandlers(submissionStatuses, setSubmissionStatuses)}
+          {...createHandlers('submissionStatuses')}
         />
       </motion.div>
 
@@ -386,7 +332,7 @@ export default function AdminPage() {
           description="Define tags to categorize and label deals"
           icon={Tags}
           items={tags}
-          {...createHandlers(tags, setTags)}
+          {...createHandlers('tags')}
         />
       </motion.div>
     </motion.div>
