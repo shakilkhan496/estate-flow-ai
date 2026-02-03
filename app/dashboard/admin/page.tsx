@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Save, Shield, Flag, Tag, Users, Briefcase } from 'lucide-react';
+import { Plus, X, Save, Shield, Flag, Tag, Users, Briefcase, Send } from 'lucide-react';
 import { useAppSelector } from '@/store/hooks';
 import { selectIsAdmin, selectIsAuthLoading } from '@/store/selectors/authSelectors';
 
@@ -63,6 +63,14 @@ const defaultClosers: ConfigItem[] = [
   { id: '1', value: 'Tom Brown', color: 'bg-gray-100 text-gray-700' },
   { id: '2', value: 'Lisa Wong', color: 'bg-gray-100 text-gray-700' },
   { id: '3', value: 'David Miller', color: 'bg-gray-100 text-gray-700' },
+];
+
+const defaultSubmissionStatuses: ConfigItem[] = [
+  { id: '1', value: 'declined', color: 'bg-red-100 text-red-700' },
+  { id: '2', value: 'approved', color: 'bg-green-100 text-green-700' },
+  { id: '3', value: 'sent', color: 'bg-blue-100 text-blue-700' },
+  { id: '4', value: 'errored', color: 'bg-orange-100 text-orange-700' },
+  { id: '5', value: 'pending', color: 'bg-gray-100 text-gray-700' },
 ];
 
 const containerVariants = {
@@ -216,6 +224,7 @@ export default function AdminPage() {
   const [products, setProducts] = useState<ConfigItem[]>(defaultProducts);
   const [originators, setOriginators] = useState<ConfigItem[]>(defaultOriginators);
   const [closers, setClosers] = useState<ConfigItem[]>(defaultClosers);
+  const [submissionStatuses, setSubmissionStatuses] = useState<ConfigItem[]>(defaultSubmissionStatuses);
   const [saveMessage, setSaveMessage] = useState('');
 
   useEffect(() => {
@@ -348,6 +357,16 @@ export default function AdminPage() {
           icon={Users}
           items={closers}
           {...createHandlers(closers, setClosers)}
+        />
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <ConfigSection
+          title="Submission Statuses"
+          description="Define the status options for funder submissions"
+          icon={Send}
+          items={submissionStatuses}
+          {...createHandlers(submissionStatuses, setSubmissionStatuses)}
         />
       </motion.div>
     </motion.div>
