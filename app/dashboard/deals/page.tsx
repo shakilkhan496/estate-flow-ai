@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import { Plus, Search, Download, Upload, MoreVertical } from 'lucide-react';
 
 interface Deal {
@@ -386,10 +387,12 @@ export default function DealsPage() {
             <Download className="w-4 h-4 mr-1" />
             Export
           </Button>
-          <Button size="sm" className="cursor-pointer bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4 mr-1" />
-            New deal
-          </Button>
+          <Link href="/dashboard/deals/new">
+            <Button size="sm" className="cursor-pointer bg-blue-600 hover:bg-blue-700">
+              <Plus className="w-4 h-4 mr-1" />
+              New deal
+            </Button>
+          </Link>
         </div>
       </motion.div>
 
