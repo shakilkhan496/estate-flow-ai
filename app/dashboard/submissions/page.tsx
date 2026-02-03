@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
   Search, Download, ChevronLeft, ChevronRight, Check, Minus,
-  Send, Filter
+  Send, Filter, X
 } from 'lucide-react';
 
 interface Submission {
@@ -26,6 +26,16 @@ interface Submission {
   updated: string;
   closers: string;
 }
+
+type EditingField = {
+  submissionId: number;
+  field: keyof Submission;
+} | null;
+
+const funderOptions = ['Mulligan Funding', 'Fenix', 'Forward', 'Fundworks', 'IOU', 'Fintap', 'LG', 'Radiance', 'Spartan', 'Fundkite', 'Kapitus', 'OnDeck', 'Biz2Credit', 'Wall St Funding', 'Can capital', 'Headway', 'Kalamata'];
+const originatorOptions = ['Marc Willis', 'Sarah Johnson', 'Mike Chen', 'Main Wills'];
+const closerOptions = ['Tom Brown', 'Lisa Wong', 'David Miller'];
+const statusOptions: Submission['status'][] = ['declined', 'approved', 'sent', 'errored', 'pending'];
 
 const sampleSubmissions: Submission[] = [
   {
@@ -465,11 +475,15 @@ const statusColors: Record<Submission['status'], string> = {
 };
 
 export default function SubmissionsPage() {
-  const [submissions] = useState<Submission[]>(sampleSubmissions);
+  const [submissions, setSubmissions] = useState<Submission[]>(sampleSubmissions);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [funderFilter, setFunderFilter] = useState('All');
+  const [originatorFilter, setOriginatorFilter] = useState('All');
+  const [closerFilter, setCloserFilter] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
+  const [editing, setEditing] = useState<EditingField>(null);
+  const [editValue, setEditValue] = useState('');
   const itemsPerPage = 30;
 
   const funders = ['All', ...new Set(submissions.map(s => s.funder))];
@@ -482,7 +496,9 @@ export default function SubmissionsPage() {
       sub.dealId.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'All' || sub.status === statusFilter;
     const matchesFunder = funderFilter === 'All' || sub.funder === funderFilter;
-    return matchesSearch && matchesStatus && matchesFunder;
+    const matchesOriginator = originatorFilter === 'All' || sub.originator === originatorFilter;
+    const matchesCloser = closerFilter === 'All' || sub.closers === closerFilter;
+    return matchesSearch && matchesStatus && matchesFunder && matchesOriginator && matchesCloser;
   });
 
   const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage);
@@ -490,6 +506,39 @@ export default function SubmissionsPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const startEditing = (submissionId: number, field: keyof Submission, currentValue: string) => {
+    setEditing({ submissionId, field });
+    setEditValue(currentValue);
+  };
+
+  const saveEdit = () => {
+    if (editing) {
+      setSubmissions(prev => prev.map(sub => 
+        sub.id === editing.submissionId 
+          ? { ...sub, [editing.field]: editValue, updated: 'Just now' }
+          : sub
+      ));
+      setEditing(null);
+      setEditValue('');
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditing(null);
+    setEditValue('');
+  };
+
+  const updateField = (submissionId: number, field: keyof Submission, value: string | boolean) => {
+    setSubmissions(prev => prev.map(sub => 
+      sub.id === submissionId 
+        ? { ...sub, [field]: value, updated: 'Just now' }
+        : sub
+    ));
+  };
+
+  const isEditing = (submissionId: number, field: keyof Submission) => 
+    editing?.submissionId === submissionId && editing?.field === field;
 
   return (
     <motion.div
@@ -523,7 +572,7 @@ export default function SubmissionsPage() {
               className="pl-9 h-9"
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Filter className="w-4 h-4 text-gray-400" />
             <select
               value={statusFilter}
@@ -547,6 +596,26 @@ export default function SubmissionsPage() {
                 </option>
               ))}
             </select>
+            <select
+              value={originatorFilter}
+              onChange={(e) => setOriginatorFilter(e.target.value)}
+              className="h-9 px-3 border rounded text-sm bg-white cursor-pointer"
+            >
+              <option value="All">All Originators</option>
+              {originatorOptions.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+            <select
+              value={closerFilter}
+              onChange={(e) => setCloserFilter(e.target.value)}
+              className="h-9 px-3 border rounded text-sm bg-white cursor-pointer"
+            >
+              <option value="All">All Closers</option>
+              {closerOptions.map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
           </div>
         </div>
       </motion.div>
@@ -558,16 +627,16 @@ export default function SubmissionsPage() {
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">ID</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[200px]">DEAL</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">FUNDER</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">STATUS</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[140px]">FUNDER</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[100px]">STATUS</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[300px]">RESPONSE</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[200px]">ERROR</th>
                 <th className="text-center px-4 py-3 font-medium text-gray-600 whitespace-nowrap">AI</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">ORIGINATOR</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">CLOSERS</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[130px]">ORIGINATOR</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[130px]">CLOSERS</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">SUBMITTED</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">UPDATED</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap">SUBMITTED BY</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[130px]">SUBMITTED BY</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600 whitespace-nowrap min-w-[200px]">SENDER</th>
               </tr>
             </thead>
@@ -575,38 +644,211 @@ export default function SubmissionsPage() {
               {paginatedSubmissions.map((submission) => (
                 <tr key={submission.id} className="border-b hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3 text-gray-900 font-medium">{submission.id}</td>
+                  
                   <td className="px-4 py-3">
-                    <span className="text-gray-900 font-medium">{submission.deal}</span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{submission.funder}</td>
-                  <td className="px-4 py-3">
-                    <Badge className={`${statusColors[submission.status]} border`}>
-                      {submission.status}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 text-xs max-w-[300px]">
-                    <div className="whitespace-pre-wrap line-clamp-3" title={submission.response}>
-                      {submission.response || '--'}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 text-xs max-w-[200px]">
-                    <div className="whitespace-pre-wrap line-clamp-3 text-orange-600" title={submission.error}>
-                      {submission.error || '--'}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {submission.ai ? (
-                      <Check className="w-4 h-4 text-gray-700 mx-auto" />
+                    {isEditing(submission.id, 'deal') ? (
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' ? saveEdit() : e.key === 'Escape' && cancelEdit()}
+                          className="h-7 text-sm"
+                          autoFocus
+                        />
+                        <Button size="sm" variant="ghost" onClick={saveEdit} className="h-7 w-7 p-0 cursor-pointer">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-7 w-7 p-0 cursor-pointer">
+                          <X className="w-3 h-3 text-red-600" />
+                        </Button>
+                      </div>
                     ) : (
-                      <Minus className="w-4 h-4 text-gray-400 mx-auto" />
+                      <span 
+                        className="text-gray-900 font-medium cursor-pointer hover:text-blue-600"
+                        onClick={() => startEditing(submission.id, 'deal', submission.deal)}
+                      >
+                        {submission.deal}
+                      </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-700">{submission.originator}</td>
-                  <td className="px-4 py-3 text-gray-700">{submission.closers}</td>
+                  
+                  <td className="px-4 py-3">
+                    <select
+                      value={submission.funder}
+                      onChange={(e) => updateField(submission.id, 'funder', e.target.value)}
+                      className="h-8 px-2 border rounded text-sm bg-white cursor-pointer w-full"
+                    >
+                      {funderOptions.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </td>
+                  
+                  <td className="px-4 py-3">
+                    <select
+                      value={submission.status}
+                      onChange={(e) => updateField(submission.id, 'status', e.target.value as Submission['status'])}
+                      className={`h-8 px-2 border rounded text-sm cursor-pointer w-full ${statusColors[submission.status]}`}
+                    >
+                      {statusOptions.map((opt) => (
+                        <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>
+                      ))}
+                    </select>
+                  </td>
+                  
+                  <td className="px-4 py-3 text-gray-600 text-xs max-w-[300px]">
+                    {isEditing(submission.id, 'response') ? (
+                      <div className="flex items-start gap-1">
+                        <textarea
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Escape' && cancelEdit()}
+                          className="w-full h-20 p-2 text-xs border rounded resize-none"
+                          autoFocus
+                        />
+                        <div className="flex flex-col gap-1">
+                          <Button size="sm" variant="ghost" onClick={saveEdit} className="h-6 w-6 p-0 cursor-pointer">
+                            <Check className="w-3 h-3 text-green-600" />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-6 w-6 p-0 cursor-pointer">
+                            <X className="w-3 h-3 text-red-600" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        className="whitespace-pre-wrap line-clamp-3 cursor-pointer hover:text-blue-600" 
+                        title={submission.response || 'Click to add response'}
+                        onClick={() => startEditing(submission.id, 'response', submission.response)}
+                      >
+                        {submission.response || '--'}
+                      </div>
+                    )}
+                  </td>
+                  
+                  <td className="px-4 py-3 text-gray-600 text-xs max-w-[200px]">
+                    {isEditing(submission.id, 'error') ? (
+                      <div className="flex items-start gap-1">
+                        <textarea
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Escape' && cancelEdit()}
+                          className="w-full h-20 p-2 text-xs border rounded resize-none"
+                          autoFocus
+                        />
+                        <div className="flex flex-col gap-1">
+                          <Button size="sm" variant="ghost" onClick={saveEdit} className="h-6 w-6 p-0 cursor-pointer">
+                            <Check className="w-3 h-3 text-green-600" />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-6 w-6 p-0 cursor-pointer">
+                            <X className="w-3 h-3 text-red-600" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        className="whitespace-pre-wrap line-clamp-3 text-orange-600 cursor-pointer hover:text-orange-800" 
+                        title={submission.error || 'Click to add error'}
+                        onClick={() => startEditing(submission.id, 'error', submission.error)}
+                      >
+                        {submission.error || '--'}
+                      </div>
+                    )}
+                  </td>
+                  
+                  <td className="px-4 py-3 text-center">
+                    <button
+                      onClick={() => updateField(submission.id, 'ai', !submission.ai)}
+                      className="cursor-pointer hover:bg-gray-100 p-1 rounded"
+                    >
+                      {submission.ai ? (
+                        <Check className="w-4 h-4 text-gray-700 mx-auto" />
+                      ) : (
+                        <Minus className="w-4 h-4 text-gray-400 mx-auto" />
+                      )}
+                    </button>
+                  </td>
+                  
+                  <td className="px-4 py-3">
+                    <select
+                      value={submission.originator}
+                      onChange={(e) => updateField(submission.id, 'originator', e.target.value)}
+                      className="h-8 px-2 border rounded text-sm bg-white cursor-pointer w-full"
+                    >
+                      {originatorOptions.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </td>
+                  
+                  <td className="px-4 py-3">
+                    <select
+                      value={submission.closers}
+                      onChange={(e) => updateField(submission.id, 'closers', e.target.value)}
+                      className="h-8 px-2 border rounded text-sm bg-white cursor-pointer w-full"
+                    >
+                      {closerOptions.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </td>
+                  
                   <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{submission.submitted}</td>
                   <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{submission.updated}</td>
-                  <td className="px-4 py-3 text-gray-700">{submission.submittedBy}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{submission.sender}</td>
+                  
+                  <td className="px-4 py-3">
+                    {isEditing(submission.id, 'submittedBy') ? (
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' ? saveEdit() : e.key === 'Escape' && cancelEdit()}
+                          className="h-7 text-sm"
+                          autoFocus
+                        />
+                        <Button size="sm" variant="ghost" onClick={saveEdit} className="h-7 w-7 p-0 cursor-pointer">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-7 w-7 p-0 cursor-pointer">
+                          <X className="w-3 h-3 text-red-600" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <span 
+                        className="text-gray-700 cursor-pointer hover:text-blue-600"
+                        onClick={() => startEditing(submission.id, 'submittedBy', submission.submittedBy)}
+                      >
+                        {submission.submittedBy}
+                      </span>
+                    )}
+                  </td>
+                  
+                  <td className="px-4 py-3">
+                    {isEditing(submission.id, 'sender') ? (
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' ? saveEdit() : e.key === 'Escape' && cancelEdit()}
+                          className="h-7 text-sm"
+                          autoFocus
+                        />
+                        <Button size="sm" variant="ghost" onClick={saveEdit} className="h-7 w-7 p-0 cursor-pointer">
+                          <Check className="w-3 h-3 text-green-600" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={cancelEdit} className="h-7 w-7 p-0 cursor-pointer">
+                          <X className="w-3 h-3 text-red-600" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <span 
+                        className="text-gray-500 text-xs cursor-pointer hover:text-blue-600"
+                        onClick={() => startEditing(submission.id, 'sender', submission.sender)}
+                      >
+                        {submission.sender}
+                      </span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
