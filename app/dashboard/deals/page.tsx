@@ -714,25 +714,11 @@ function PipelineColumn({ stage, deals, onDragStart, onDragOver, onDrop, onEdit,
 
   return (
     <div 
-      className="flex-shrink-0 w-[280px] bg-gray-50 rounded-lg flex flex-col h-full"
+      className="flex-shrink-0 w-[280px] bg-gray-50 rounded-b-lg flex flex-col"
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, stage.id)}
     >
-      <div className="p-3 border-b bg-white rounded-t-lg sticky top-0 z-10">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${stage.color}`} />
-            <h3 className="font-medium text-gray-900 text-sm">{stage.name}</h3>
-          </div>
-          <Badge variant="secondary" className="text-xs">
-            {deals.length}
-          </Badge>
-        </div>
-        {totalAmount > 0 && (
-          <p className="text-xs text-gray-500">{formatAmount(totalAmount)}</p>
-        )}
-      </div>
-      <div className="flex-1 p-2 space-y-2">
+      <div className="p-2 space-y-2 min-h-[100px]">
         <AnimatePresence>
           {deals.map((deal) => (
             <DealCard key={deal.id} deal={deal} onDragStart={onDragStart} onEdit={onEdit} />
@@ -1509,7 +1495,7 @@ export default function DealsPage() {
       </motion.div>
 
       {viewMode === 'pipeline' ? (
-        <motion.div variants={itemVariants} className="relative bg-white border rounded-lg overflow-auto">
+        <motion.div variants={itemVariants} className="relative bg-white border rounded-lg">
           <Button
             variant="outline"
             size="sm"
@@ -1529,21 +1515,49 @@ export default function DealsPage() {
 
           <div 
             id="pipeline-container"
-            className="flex gap-3 p-4 overflow-x-auto"
+            className="overflow-x-auto"
             style={{ scrollBehavior: 'smooth' }}
           >
-            {pipelineStages.map((stage) => (
-              <PipelineColumn
-                key={stage.id}
-                stage={stage}
-                deals={getDealsByStage(stage.id)}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                onEdit={(deal) => setEditingDeal(deal)}
-                totalAmount={getStageTotal(stage.id)}
-              />
-            ))}
+            <div className="flex gap-3 p-4 pb-0 sticky top-0 bg-white z-10 border-b">
+              {pipelineStages.map((stage) => {
+                const stageDeals = getDealsByStage(stage.id);
+                const stageTotal = getStageTotal(stage.id);
+                const formatAmount = (value: number) => {
+                  if (value === 0) return null;
+                  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+                };
+                return (
+                  <div key={stage.id} className="flex-shrink-0 w-[280px] p-3 bg-gray-50 rounded-t-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${stage.color}`} />
+                        <h3 className="font-medium text-gray-900 text-sm">{stage.name}</h3>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        {stageDeals.length}
+                      </Badge>
+                    </div>
+                    {stageTotal > 0 && (
+                      <p className="text-xs text-gray-500">{formatAmount(stageTotal)}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex gap-3 px-4 pb-4">
+              {pipelineStages.map((stage) => (
+                <PipelineColumn
+                  key={stage.id}
+                  stage={stage}
+                  deals={getDealsByStage(stage.id)}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  onEdit={(deal) => setEditingDeal(deal)}
+                  totalAmount={getStageTotal(stage.id)}
+                />
+              ))}
+            </div>
           </div>
         </motion.div>
       ) : (
