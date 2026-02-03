@@ -1506,7 +1506,8 @@ export default function DealsPage() {
         <motion.div variants={itemVariants} className="bg-white border rounded-lg">
           <div 
             id="pipeline-header"
-            className="flex gap-3 p-4 pb-2 overflow-x-auto sticky top-0 bg-white z-10 border-b rounded-t-lg"
+            className="flex gap-3 p-4 pb-2 overflow-x-auto sticky top-0 bg-white z-10 border-b rounded-t-lg scrollbar-hide"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             onScroll={(e) => {
               const container = document.getElementById('pipeline-cards');
               if (container) container.scrollLeft = e.currentTarget.scrollLeft;
