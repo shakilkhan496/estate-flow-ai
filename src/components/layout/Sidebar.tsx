@@ -34,7 +34,7 @@ const menuItems = [
   { name: 'Offers', href: '/dashboard/offers', icon: DollarSign },
   { name: 'Submissions', href: '/dashboard/submissions', icon: Send },
   { name: 'Documents', href: '/dashboard/documents', icon: FolderOpen },
-  { name: 'Team', href: '/dashboard/team', icon: Users, requiresManager: true },
+  { name: 'Users', href: '/dashboard/team', icon: Users, requiresManager: true },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   { name: 'Super Admin', href: '/dashboard/admin', icon: Shield, requiresAdmin: true },
 ];

@@ -4,6 +4,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
+  phone?: string;
   role: 'admin' | 'manager' | 'broker' | 'user';
   isActive: boolean;
   activeOrganizationId: Types.ObjectId | null;
@@ -29,6 +30,11 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: [true, 'Name is required'],
       trim: true,
+    },
+    phone: {
+      type: String,
+      trim: true,
+      default: '',
     },
     role: {
       type: String,

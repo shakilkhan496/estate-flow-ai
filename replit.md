@@ -20,7 +20,7 @@ app/
 │   ├── layout.tsx         # Dashboard layout with sidebar
 │   ├── deals/             # Deals with Table & Pipeline views
 │   ├── documents/         # Documents management page
-│   ├── team/              # Team management page
+│   ├── team/              # Users management page (create, edit, delete users)
 │   ├── settings/          # Settings page
 │   └── admin/             # Super Admin settings (Admin only)
 ├── globals.css
@@ -68,6 +68,12 @@ src/
 
 ## Dashboard Pages
 - **Dashboard** - Overview with stats and recent deals
+- **Users** - Full user management with create, edit, deactivate features. Includes:
+  - User cards with name, email, phone, role, and status
+  - Add new user with name, email, phone, password, and role
+  - Edit existing users including password reset
+  - Activate/deactivate users
+  - Search and filter users
 - **Deals** - Combined view with toggle between Table and Pipeline modes:
   - **Table View** - Full spreadsheet with columns (Company, Deal ID, Status, Flags, DBA, Owner, Phone, Email, Products, Notes, Originators, Closers, Date Created/Updated, GURL, Max Offer, Monthly Rev, Owners count)
   - **Pipeline View** - Kanban board with 15 stages (New Application, Missing Documents, Ready to Submit, Submitted, Resubmitting, Approved, Offer Selected, Offer Pitched, Repricing, Offer Accepted, Received DL/VC, Contracts Requested, Contracts Sent, Contracts Signed, Final Review). Features include:
