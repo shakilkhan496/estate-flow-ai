@@ -1,5 +1,8 @@
 import { RootState } from '@/store';
 
+export const selectCompanyName = (state: RootState) => 
+  state.adminConfig.companyName;
+
 export const selectStatuses = (state: RootState) => 
   state.adminConfig.statuses.map(s => s.value);
 

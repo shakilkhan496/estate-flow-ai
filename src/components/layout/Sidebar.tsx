@@ -27,6 +27,7 @@ import { selectUser, selectIsManagerOrAbove, selectIsAdmin } from '@/store/selec
 import { logoutUser } from '@/store/actions/authActions';
 import { selectSidebarOpen } from '@/store/selectors/uiSelectors';
 import { toggleSidebar, setSidebarOpen } from '@/store/slices/uiSlice';
+import { selectCompanyName } from '@/store/selectors/adminConfigSelectors';
 
 const menuItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -46,6 +47,7 @@ export default function Sidebar() {
   const isManagerOrAbove = useAppSelector(selectIsManagerOrAbove);
   const isAdmin = useAppSelector(selectIsAdmin);
   const isOpen = useAppSelector(selectSidebarOpen);
+  const companyName = useAppSelector(selectCompanyName);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -98,7 +100,7 @@ export default function Sidebar() {
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-lg">MCA Pilot</span>
+              <span className="font-bold text-lg">{companyName}</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -213,7 +215,7 @@ export default function Sidebar() {
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-lg">MCA Pilot</span>
+            <span className="font-bold text-lg">{companyName}</span>
           </div>
           <Button
             variant="ghost"
