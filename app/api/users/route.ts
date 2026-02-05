@@ -25,27 +25,29 @@ export async function GET(request: NextRequest) {
 
     await dbConnect();
 
-    const members = await OrganizationMember.find({ organizationId: activeOrgId, isActive: true })
+    const members = await OrganizationMember.find({ organizationId: activeOrgId })
       .populate('userId', 'name email isActive role createdAt phone')
       .populate('roleId', 'name key')
       .sort({ createdAt: -1 });
 
-    const users = members.map(m => {
-      const userDoc = m.userId as unknown as { _id: string; name: string; email: string; isActive: boolean; phone?: string };
-      const roleDoc = m.roleId as unknown as { _id: string; name: string; key: string } | null;
-      return {
-        _id: userDoc._id,
-        name: userDoc.name,
-        email: userDoc.email,
-        phone: userDoc.phone || '',
-        isActive: userDoc.isActive,
-        role: roleDoc?.name || 'User',
-        roleKey: roleDoc?.key || 'USER',
-        roleId: roleDoc?._id,
-        memberId: m._id,
-        createdAt: m.createdAt,
-      };
-    });
+    const users = members
+      .filter(m => m.userId)
+      .map(m => {
+        const userDoc = m.userId as unknown as { _id: string; name: string; email: string; isActive: boolean; phone?: string };
+        const roleDoc = m.roleId as unknown as { _id: string; name: string; key: string } | null;
+        return {
+          _id: userDoc._id,
+          name: userDoc.name,
+          email: userDoc.email,
+          phone: userDoc.phone || '',
+          isActive: m.isActive && userDoc.isActive,
+          role: roleDoc?.name || 'User',
+          roleKey: roleDoc?.key || 'USER',
+          roleId: roleDoc?._id,
+          memberId: m._id,
+          createdAt: m.createdAt,
+        };
+      });
 
     return NextResponse.json({ users });
   } catch (error) {
