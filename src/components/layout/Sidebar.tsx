@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Shield,
   Send,
+  DollarSign,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,7 @@ import { toggleSidebar, setSidebarOpen } from '@/store/slices/uiSlice';
 const menuItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Deals', href: '/dashboard/deals', icon: TrendingUp },
+  { name: 'Offers', href: '/dashboard/offers', icon: DollarSign },
   { name: 'Submissions', href: '/dashboard/submissions', icon: Send },
   { name: 'Documents', href: '/dashboard/documents', icon: FolderOpen },
   { name: 'Team', href: '/dashboard/team', icon: Users, requiresManager: true },
