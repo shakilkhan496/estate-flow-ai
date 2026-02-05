@@ -19,9 +19,19 @@ export async function seedRBAC() {
 
   console.log('Seeding RBAC data...');
 
+  // Always ensure admin user has correct role
+  const existingAdmin = await User.findOne({ email: 'admin@mcapilot.com' });
+  if (existingAdmin && existingAdmin.role !== 'admin') {
+    await User.updateOne(
+      { email: 'admin@mcapilot.com' },
+      { $set: { role: 'admin' } }
+    );
+    console.log('Updated Super Admin user role to admin');
+  }
+
   const existingPermissions = await Permission.countDocuments();
   if (existingPermissions > 0) {
-    console.log('RBAC data already exists, skipping seed.');
+    console.log('RBAC data already exists, skipping full seed.');
     return;
   }
 
@@ -74,10 +84,17 @@ export async function seedRBAC() {
       email: 'admin@mcapilot.com',
       password: hashedPassword,
       name: 'Super Admin',
+      role: 'admin',
       isActive: true,
       activeOrganizationId: platformOrg._id,
     });
     console.log('Created Super Admin user');
+  } else if (superAdminUser.role !== 'admin') {
+    await User.updateOne(
+      { email: 'admin@mcapilot.com' },
+      { $set: { role: 'admin' } }
+    );
+    console.log('Updated Super Admin user role');
   }
 
   const superAdminRole = await Role.findOne({ key: 'SUPER_ADMIN' });
