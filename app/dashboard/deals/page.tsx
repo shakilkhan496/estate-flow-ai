@@ -14,6 +14,8 @@ import {
   LayoutGrid, Table2, ChevronLeft, ChevronRight, User, Clock, MoreHorizontal,
   History, Minimize2, Maximize2, ChevronDown, ChevronUp
 } from 'lucide-react';
+import CSVImportModal from '@/components/deals/CSVImportModal';
+import { DealImport, ImportHistoryEntry, convertImportToDeal } from '@/types/deals';
 
 interface Owner {
   id: string;
@@ -1338,6 +1340,15 @@ export default function DealsPage() {
   const [draggedDeal, setDraggedDeal] = useState<Deal | null>(null);
   const [collapsedStages, setCollapsedStages] = useState<Set<string>>(new Set());
   
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importHistory, setImportHistory] = useState<ImportHistoryEntry[]>([]);
+
+  const handleImportComplete = (importedDeals: DealImport[], historyEntry: ImportHistoryEntry) => {
+    const newDeals: Deal[] = importedDeals.map((deal, index) => convertImportToDeal(deal, index));
+    setDeals(prev => [...newDeals, ...prev]);
+    setImportHistory(prev => [historyEntry, ...prev]);
+  };
+
   const toggleStageCollapse = (stageId: string) => {
     setCollapsedStages(prev => {
       const newSet = new Set(prev);
@@ -1692,7 +1703,7 @@ export default function DealsPage() {
               Pipeline
             </Button>
           </div>
-          <Button variant="outline" size="sm" className="cursor-pointer">
+          <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => setIsImportModalOpen(true)}>
             <Upload className="w-4 h-4 mr-1" />
             Import
           </Button>
@@ -2144,6 +2155,13 @@ export default function DealsPage() {
           <p className="text-gray-500">No deals found matching your criteria.</p>
         </motion.div>
       )}
+
+      <CSVImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImportComplete={handleImportComplete}
+        existingDeals={deals.map(d => ({ dealId: d.dealId, company: d.company }))}
+      />
     </motion.div>
   );
 }
