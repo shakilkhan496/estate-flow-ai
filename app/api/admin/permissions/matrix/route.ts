@@ -4,12 +4,23 @@ import Role from '@/lib/models/Role';
 import Permission from '@/lib/models/Permission';
 import RolePermission from '@/lib/models/RolePermission';
 import { verifyAuth } from '@/lib/auth';
+import { hasPermission, isSuperAdmin } from '@/lib/rbac';
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifyAuth(request);
     if (!auth.success || !auth.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = auth.user.id;
+    const activeOrgId = auth.user.activeOrganizationId;
+
+    const permResult = await hasPermission(userId, activeOrgId, 'ROLE:VIEW');
+    const isSuper = await isSuperAdmin(userId);
+    
+    if (!permResult.allowed && !isSuper) {
+      return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
     }
 
     await dbConnect();

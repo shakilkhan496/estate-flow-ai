@@ -24,6 +24,7 @@ export interface RolePermissionDef {
 
 export const DEFAULT_PERMISSIONS: PermissionDef[] = [
   { key: 'ORG:VIEW', description: 'View organization details', group: 'Organization' },
+  { key: 'ORG:VIEW_MEMBERS', description: 'View organization members', group: 'Organization' },
   { key: 'ORG:MANAGE_USERS', description: 'Manage organization users', group: 'Organization' },
   { key: 'ORG:MANAGE_SETTINGS', description: 'Manage organization settings', group: 'Organization' },
   
@@ -123,8 +124,10 @@ export const DEFAULT_ROLE_PERMISSIONS: RolePermissionDef[] = [
   { roleKey: 'ACCOUNTING', permissionKey: 'AUDIT:VIEW', scope: 'GLOBAL', allowed: true },
   
   { roleKey: 'ISO_OWNER', permissionKey: 'ORG:VIEW', scope: 'ORG', allowed: true },
+  { roleKey: 'ISO_OWNER', permissionKey: 'ORG:VIEW_MEMBERS', scope: 'ORG', allowed: true },
   { roleKey: 'ISO_OWNER', permissionKey: 'ORG:MANAGE_USERS', scope: 'ORG', allowed: true },
   { roleKey: 'ISO_OWNER', permissionKey: 'ORG:MANAGE_SETTINGS', scope: 'ORG', allowed: true },
+  { roleKey: 'ISO_OWNER', permissionKey: 'ROLE:VIEW', scope: 'ORG', allowed: true },
   { roleKey: 'ISO_OWNER', permissionKey: 'SUBMISSION:CREATE', scope: 'ORG', allowed: true },
   { roleKey: 'ISO_OWNER', permissionKey: 'SUBMISSION:VIEW', scope: 'ORG', allowed: true },
   { roleKey: 'ISO_OWNER', permissionKey: 'SUBMISSION:EDIT', scope: 'ORG', allowed: true },

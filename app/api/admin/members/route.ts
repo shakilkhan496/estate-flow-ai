@@ -15,13 +15,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const userId = auth.user.id;
+    const activeOrgId = auth.user.activeOrganizationId;
+
+    const permResult = await hasPermission(userId, activeOrgId, 'ORG:VIEW_MEMBERS');
+    const isSuper = await isSuperAdmin(userId);
+    
+    if (!permResult.allowed && !isSuper) {
+      return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
+    }
+
     await dbConnect();
 
     const { searchParams } = new URL(request.url);
-    const organizationId = searchParams.get('organizationId') || auth.user.activeOrganizationId;
+    let organizationId = searchParams.get('organizationId') || auth.user.activeOrganizationId;
 
     if (!organizationId) {
       return NextResponse.json({ error: 'Organization ID required' }, { status: 400 });
+    }
+
+    if (organizationId !== activeOrgId && !isSuper) {
+      return NextResponse.json({ error: 'Cannot view members of other organizations' }, { status: 403 });
     }
 
     const members = await OrganizationMember.find({ organizationId })

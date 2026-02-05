@@ -13,6 +13,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const userId = auth.user.id;
+    const activeOrgId = auth.user.activeOrganizationId;
+
+    const permResult = await hasPermission(userId, activeOrgId, 'ROLE:VIEW');
+    const isSuper = await isSuperAdmin(userId);
+    
+    if (!permResult.allowed && !isSuper) {
+      return NextResponse.json({ error: 'Permission denied' }, { status: 403 });
+    }
+
     await dbConnect();
 
     const { searchParams } = new URL(request.url);
