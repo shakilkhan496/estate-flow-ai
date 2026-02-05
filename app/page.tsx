@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FileText, Users, TrendingUp, Shield, Zap, BarChart3 } from "lucide-react";
+import ROICalculator from "@/components/landing/ROICalculator";
 
 export default function Home() {
   return (
@@ -104,6 +105,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <ROICalculator />
 
         <section className="py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
