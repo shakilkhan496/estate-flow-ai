@@ -149,10 +149,14 @@ export async function PATCH(request: NextRequest) {
     await dbConnect();
 
     const body = await request.json();
-    const { memberId, roleId, isActive } = body;
+    const { memberId, roleId, isActive, newPassword } = body;
 
     if (!memberId) {
       return NextResponse.json({ error: 'memberId is required' }, { status: 400 });
+    }
+
+    if (newPassword && newPassword.length < 6) {
+      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
     }
 
     const member = await OrganizationMember.findById(memberId)
@@ -197,13 +201,18 @@ export async function PATCH(request: NextRequest) {
 
     await member.save();
 
+    if (newPassword) {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await User.findByIdAndUpdate(member.userId, { password: hashedPassword });
+    }
+
     await createAuditLog({
       actorUserId: userId,
       organizationId: activeOrgId,
       action: 'MEMBER_UPDATED',
       entityType: 'OrganizationMember',
       entityId: memberId,
-      metadata: { roleId, isActive },
+      metadata: { roleId, isActive, passwordChanged: !!newPassword },
     });
 
     const updatedMember = await OrganizationMember.findById(memberId)

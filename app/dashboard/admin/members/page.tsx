@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { 
   Users, Plus, Edit2, UserX, UserCheck, Search, RefreshCw,
-  Mail, Shield, Building2, Clock
+  Mail, Shield, Building2, Clock, Key, Eye, EyeOff
 } from 'lucide-react';
 
 interface Member {
@@ -41,6 +41,9 @@ export default function MembersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
 
   const [inviteData, setInviteData] = useState({
     email: '',
@@ -95,8 +98,11 @@ export default function MembersPage() {
     }
   };
 
-  const updateMember = async (memberId: string, updates: { roleId?: string; isActive?: boolean }) => {
+  const updateMember = async (memberId: string, updates: { roleId?: string; isActive?: boolean; newPassword?: string }) => {
     try {
+      if (updates.newPassword) {
+        setPasswordSaving(true);
+      }
       const response = await fetch('/api/admin/members', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -104,7 +110,12 @@ export default function MembersPage() {
       });
 
       if (response.ok) {
-        setEditingMember(null);
+        if (updates.newPassword) {
+          setNewPassword('');
+          alert('Password updated successfully');
+        } else {
+          setEditingMember(null);
+        }
         fetchMembers();
       } else {
         const data = await response.json();
@@ -112,6 +123,8 @@ export default function MembersPage() {
       }
     } catch (error) {
       console.error('Error updating member:', error);
+    } finally {
+      setPasswordSaving(false);
     }
   };
 
@@ -313,7 +326,7 @@ export default function MembersPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setEditingMember(null)}
+            onClick={() => { setEditingMember(null); setNewPassword(''); setShowPassword(false); }}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -322,30 +335,65 @@ export default function MembersPage() {
               className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
               onClick={e => e.stopPropagation()}
             >
-              <h2 className="text-xl font-semibold mb-4">Edit Member Role</h2>
+              <h2 className="text-xl font-semibold mb-4">Edit Member</h2>
               
               <div className="mb-4">
                 <p className="text-gray-600">{editingMember.userId.name}</p>
                 <p className="text-sm text-gray-400">{editingMember.userId.email}</p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select
-                  defaultValue={editingMember.roleId._id}
-                  onChange={(e) => updateMember(editingMember._id, { roleId: e.target.value })}
-                  className="w-full h-10 px-3 border rounded-lg cursor-pointer"
-                >
-                  {roles.map(role => (
-                    <option key={role._id} value={role._id}>
-                      {role.name} ({role.orgType})
-                    </option>
-                  ))}
-                </select>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <select
+                    defaultValue={editingMember.roleId._id}
+                    onChange={(e) => updateMember(editingMember._id, { roleId: e.target.value })}
+                    className="w-full h-10 px-3 border rounded-lg cursor-pointer"
+                  >
+                    {roles.map(role => (
+                      <option key={role._id} value={role._id}>
+                        {role.name} ({role.orgType})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="border-t pt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                    <Key className="w-4 h-4" />
+                    Set New Password
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <Button
+                      onClick={() => updateMember(editingMember._id, { newPassword })}
+                      disabled={!newPassword || newPassword.length < 6 || passwordSaving}
+                      className="cursor-pointer"
+                    >
+                      {passwordSaving ? 'Saving...' : 'Update'}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Minimum 6 characters</p>
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 mt-6">
-                <Button variant="outline" onClick={() => setEditingMember(null)} className="cursor-pointer">
+                <Button variant="outline" onClick={() => { setEditingMember(null); setNewPassword(''); setShowPassword(false); }} className="cursor-pointer">
                   Close
                 </Button>
               </div>
