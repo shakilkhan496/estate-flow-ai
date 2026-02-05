@@ -1358,6 +1358,57 @@ export default function DealsPage() {
     setCollapsedStages(new Set());
   };
 
+  const exportToCSV = () => {
+    const headers = [
+      'Deal ID', 'Company', 'DBA', 'Status', 'Flags', 'Owner', 'Phone', 'Email',
+      'Products', 'Notes', 'Originators', 'Closers', 'Date Created', 'Date Updated',
+      'GURL', 'Max Offer', 'Monthly Revenue', 'Originator', 'Closer', 'Owners Count'
+    ];
+
+    const escapeCSV = (value: string | number | null | undefined): string => {
+      if (value === null || value === undefined) return '';
+      const str = String(value);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const rows = filteredDeals.map(deal => [
+      escapeCSV(deal.dealId),
+      escapeCSV(deal.company),
+      escapeCSV(deal.dba),
+      escapeCSV(deal.status),
+      escapeCSV(deal.flags.join('; ')),
+      escapeCSV(deal.owner),
+      escapeCSV(deal.phone),
+      escapeCSV(deal.email),
+      escapeCSV(deal.products),
+      escapeCSV(deal.notes),
+      escapeCSV(deal.originators),
+      escapeCSV(deal.closers),
+      escapeCSV(deal.dateCreated),
+      escapeCSV(deal.dateUpdated),
+      escapeCSV(deal.gurl),
+      escapeCSV(deal.maxOffer),
+      escapeCSV(deal.monthlyRev),
+      escapeCSV(deal.originator),
+      escapeCSV(deal.closer),
+      escapeCSV(deal.owners.length)
+    ].join(','));
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `deals_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const filteredDeals = deals.filter((deal) => {
     const matchesSearch = !searchQuery || 
       deal.company.toLowerCase().includes(searchQuery.toLowerCase());
@@ -1645,7 +1696,7 @@ export default function DealsPage() {
             <Upload className="w-4 h-4 mr-1" />
             Import
           </Button>
-          <Button variant="outline" size="sm" className="cursor-pointer">
+          <Button variant="outline" size="sm" className="cursor-pointer" onClick={exportToCSV}>
             <Download className="w-4 h-4 mr-1" />
             Export
           </Button>
