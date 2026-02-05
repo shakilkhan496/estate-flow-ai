@@ -7,6 +7,7 @@ export interface ConfigItem {
 }
 
 interface AdminConfigState {
+  companyName: string;
   statuses: ConfigItem[];
   flags: ConfigItem[];
   products: ConfigItem[];
@@ -17,6 +18,7 @@ interface AdminConfigState {
 }
 
 const initialState: AdminConfigState = {
+  companyName: 'MCA Pilot',
   statuses: [
     { id: '1', value: 'Ready to Submit', color: 'bg-blue-100 text-blue-700' },
     { id: '2', value: 'Pending', color: 'bg-yellow-100 text-yellow-700' },
@@ -68,12 +70,15 @@ const initialState: AdminConfigState = {
   ],
 };
 
-type ConfigKey = keyof AdminConfigState;
+type ConfigKey = 'statuses' | 'flags' | 'products' | 'originators' | 'closers' | 'submissionStatuses' | 'tags';
 
 const adminConfigSlice = createSlice({
   name: 'adminConfig',
   initialState,
   reducers: {
+    setCompanyName: (state, action: PayloadAction<string>) => {
+      state.companyName = action.payload;
+    },
     addConfigItem: (state, action: PayloadAction<{ key: ConfigKey; item: ConfigItem }>) => {
       state[action.payload.key].push(action.payload.item);
     },
@@ -96,5 +101,5 @@ const adminConfigSlice = createSlice({
   },
 });
 
-export const { addConfigItem, removeConfigItem, updateConfigItem, setConfigItems } = adminConfigSlice.actions;
+export const { setCompanyName, addConfigItem, removeConfigItem, updateConfigItem, setConfigItems } = adminConfigSlice.actions;
 export default adminConfigSlice.reducer;

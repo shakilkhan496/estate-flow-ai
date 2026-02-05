@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Save, Shield, Flag, Tag, Users, Briefcase, Send, Tags, Key, UserCog, ChevronRight } from 'lucide-react';
+import { Plus, X, Save, Shield, Flag, Tag, Users, Briefcase, Send, Tags, Key, UserCog, ChevronRight, Building2, Pencil, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { selectIsAdmin, selectIsAuthLoading } from '@/store/selectors/authSelectors';
@@ -15,7 +15,8 @@ import {
   ConfigItem, 
   addConfigItem, 
   removeConfigItem, 
-  updateConfigItem 
+  updateConfigItem,
+  setCompanyName
 } from '@/store/slices/adminConfigSlice';
 
 const colorOptions = [
@@ -175,6 +176,7 @@ export default function AdminPage() {
   const isAdmin = useAppSelector(selectIsAdmin);
   const isLoading = useAppSelector(selectIsAuthLoading);
   
+  const companyName = useAppSelector((state) => state.adminConfig.companyName);
   const statuses = useAppSelector((state) => state.adminConfig.statuses);
   const flags = useAppSelector((state) => state.adminConfig.flags);
   const products = useAppSelector((state) => state.adminConfig.products);
@@ -184,6 +186,8 @@ export default function AdminPage() {
   const tags = useAppSelector((state) => state.adminConfig.tags);
   
   const [saveMessage, setSaveMessage] = useState('');
+  const [editingCompanyName, setEditingCompanyName] = useState(false);
+  const [tempCompanyName, setTempCompanyName] = useState(companyName);
 
   useEffect(() => {
     if (!isLoading && !isAdmin) {
@@ -216,6 +220,20 @@ export default function AdminPage() {
   const handleSaveAll = () => {
     setSaveMessage('Settings saved successfully!');
     setTimeout(() => setSaveMessage(''), 3000);
+  };
+
+  const handleSaveCompanyName = () => {
+    if (tempCompanyName.trim()) {
+      dispatch(setCompanyName(tempCompanyName.trim()));
+      setEditingCompanyName(false);
+      setSaveMessage('Company name updated!');
+      setTimeout(() => setSaveMessage(''), 3000);
+    }
+  };
+
+  const handleCancelCompanyEdit = () => {
+    setTempCompanyName(companyName);
+    setEditingCompanyName(false);
   };
 
   type ConfigKey = 'statuses' | 'flags' | 'products' | 'originators' | 'closers' | 'submissionStatuses' | 'tags';
@@ -314,6 +332,67 @@ export default function AdminPage() {
                   </div>
                 </div>
               </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-blue-600" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Company Settings</CardTitle>
+                <CardDescription>Configure your company information</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Company Name</label>
+                {editingCompanyName ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={tempCompanyName}
+                      onChange={(e) => setTempCompanyName(e.target.value)}
+                      className="max-w-sm"
+                      placeholder="Enter company name"
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleSaveCompanyName();
+                        if (e.key === 'Escape') handleCancelCompanyEdit();
+                      }}
+                    />
+                    <Button size="sm" onClick={handleSaveCompanyName} className="cursor-pointer">
+                      <Check className="w-4 h-4 mr-1" />
+                      Save
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={handleCancelCompanyEdit} className="cursor-pointer">
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-semibold text-gray-900">{companyName}</span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setTempCompanyName(companyName);
+                        setEditingCompanyName(true);
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <Pencil className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
