@@ -1,7 +1,9 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
-import { UserRole } from './models/User';
+import { NextRequest } from 'next/server';
+import dbConnect from './mongodb';
+import User from './models/User';
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
@@ -17,7 +19,17 @@ export interface TokenPayload {
   userId: string;
   email: string;
   name: string;
-  role: UserRole;
+}
+
+export interface AuthResult {
+  success: boolean;
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+    activeOrganizationId: string | null;
+  };
+  error?: string;
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -80,6 +92,57 @@ export function isManagerOrAbove(role: UserRole): boolean {
   return role === 'admin' || role === 'manager';
 }
 
-export function isBrokerOrAbove(role: UserRole): boolean {
+export function isBrokerOrAbove(role: string): boolean {
   return role === 'admin' || role === 'manager' || role === 'broker';
 }
+
+export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
+  try {
+    const cookieHeader = request.headers.get('cookie');
+    if (!cookieHeader) {
+      return { success: false, error: 'No authentication cookie' };
+    }
+
+    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+      const [key, value] = cookie.trim().split('=');
+      acc[key] = value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    const token = cookies[TOKEN_NAME];
+    if (!token) {
+      return { success: false, error: 'No authentication token' };
+    }
+
+    const payload = verifyToken(token);
+    if (!payload) {
+      return { success: false, error: 'Invalid token' };
+    }
+
+    await dbConnect();
+    const user = await User.findById(payload.userId).select('-password');
+    
+    if (!user) {
+      return { success: false, error: 'User not found' };
+    }
+
+    if (!user.isActive) {
+      return { success: false, error: 'User is inactive' };
+    }
+
+    return {
+      success: true,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        activeOrganizationId: user.activeOrganizationId?.toString() || null,
+      },
+    };
+  } catch (error) {
+    console.error('Auth verification error:', error);
+    return { success: false, error: 'Authentication failed' };
+  }
+}
+
+export type UserRole = 'admin' | 'manager' | 'broker' | 'user';

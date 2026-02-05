@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Save, Shield, Flag, Tag, Users, Briefcase, Send, Tags } from 'lucide-react';
+import { Plus, X, Save, Shield, Flag, Tag, Users, Briefcase, Send, Tags, Key, UserCog, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { selectIsAdmin, selectIsAuthLoading } from '@/store/selectors/authSelectors';
 import { 
@@ -264,6 +265,58 @@ export default function AdminPage() {
             Save All Changes
           </Button>
         </div>
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <Key className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Role-Based Access Control</CardTitle>
+                <CardDescription>Manage roles, permissions, and team members</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Link href="/dashboard/admin/roles" className="block">
+                <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Shield className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900">Role Builder</h3>
+                        <p className="text-sm text-gray-500">Create and edit roles, configure permissions</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                  </div>
+                </div>
+              </Link>
+              <Link href="/dashboard/admin/members" className="block">
+                <div className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <UserCog className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-900">Members</h3>
+                        <p className="text-sm text-gray-500">Manage team members and assign roles</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       <motion.div variants={itemVariants}>

@@ -86,9 +86,43 @@ src/
 - **Settings** - Account, notifications, security settings
 - **Super Admin** - Configure deal statuses, flags, products, originators, closers (Admin only)
 
+## Role-Based Access Control (RBAC)
+The app includes a comprehensive RBAC system with:
+
+### Data Models
+- **Organization** - PLATFORM, ISO, LENDER, MERCHANT types
+- **Role** - System and custom roles with organization type binding
+- **Permission** - 40+ permissions grouped by resource (Submission, Deal, Offer, etc.)
+- **RolePermission** - Maps roles to permissions with scopes (OWN, ASSIGNED, TEAM, ORG, GLOBAL)
+- **FieldRule** - Field-level access rules (READONLY, HIDDEN, EDITABLE)
+- **PolicyVersion/PolicySnapshot** - Versioned policy with publish/rollback
+- **AuditLog** - Tracks all RBAC changes
+
+### Default Roles
+- PLATFORM: SUPER_ADMIN, PLATFORM_SUPPORT, COMPLIANCE_AUDITOR, ACCOUNTING
+- ISO: ISO_OWNER, ISO_MANAGER, SENIOR_BROKER, JUNIOR_BROKER
+- LENDER: LENDER_ADMIN, UNDERWRITER, FUNDING_DESK, PORTFOLIO_MANAGER
+- MERCHANT: MERCHANT
+- ANY: CLOSING_AGENT
+
+### Admin UI
+- **Role Builder** (/dashboard/admin/roles) - Permission matrix editor
+- **Members** (/dashboard/admin/members) - Invite/manage team members
+
+### API Routes
+- `/api/admin/roles` - Role CRUD
+- `/api/admin/permissions/matrix` - Permission matrix
+- `/api/admin/permissions/toggle` - Toggle permissions
+- `/api/admin/members` - Member management
+- `/api/admin/policy/publish` - Publish policy
+- `/api/admin/policy/rollback` - Rollback to snapshot
+- `/api/admin/break-glass/restore-super-admin` - Emergency access restore
+- `/api/me` - Current user with permissions
+
 ## Environment Variables
 - `MONGODB_URI` - MongoDB connection string
 - `JWT_SECRET` - JWT signing secret (required)
+- `BREAK_GLASS_TOKEN` - (Optional) Token for emergency admin restore
 
 ## Development
 ```bash
