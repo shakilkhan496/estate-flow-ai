@@ -1,12 +1,11 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
-
-export type UserRole = 'admin' | 'manager' | 'broker' | 'user';
+import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 
 export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
-  role: UserRole;
+  isActive: boolean;
+  activeOrganizationId: Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,10 +29,14 @@ const UserSchema = new Schema<IUser>(
       required: [true, 'Name is required'],
       trim: true,
     },
-    role: {
-      type: String,
-      enum: ['admin', 'manager', 'broker', 'user'],
-      default: 'user',
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    activeOrganizationId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Organization',
+      default: null,
     },
   },
   {

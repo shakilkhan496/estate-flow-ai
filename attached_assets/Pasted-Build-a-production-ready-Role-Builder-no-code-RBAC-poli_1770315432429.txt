@@ -1,0 +1,232 @@
+Build a production-ready “Role Builder” (no-code RBAC policy editor) INSIDE my app so a SUPER_ADMIN can edit user roles, permissions, scopes, and (optional) field-level rules from the UI without changing code.
+
+Tech stack (must use):
+- Next.js App Router
+- TypeScript
+- Prisma ORM
+- PostgreSQL
+- Auth: NextAuth (preferred) OR JWT sessions
+- Tailwind UI (clean admin interface)
+
+CORE PRINCIPLE:
+Enforcement logic stays in code, but the RBAC policy (roles/permissions/scopes/field rules) is stored in the database and editable via the Super Admin UI.
+
+--------------------------------------------
+DATA MODEL (Prisma)
+--------------------------------------------
+Create these tables/models:
+
+1) User
+- id, email (unique), name, isActive, createdAt, updatedAt
+
+2) Organization
+- id, name, type (enum: PLATFORM | ISO | LENDER | MERCHANT), createdAt
+
+3) OrganizationMember  (sub-user logic)
+- id, userId, organizationId, roleId, createdAt
+- unique(userId, organizationId)
+
+4) Role
+- id
+- name (string)
+- key (string unique, e.g., "ISO_OWNER")
+- orgType (enum: PLATFORM | ISO | LENDER | MERCHANT | ANY)
+- isSystem (boolean)  // system roles can’t be deleted; can be cloned
+- createdAt
+
+5) Permission
+- id
+- key (string unique, e.g., "SUBMISSION:CREATE")
+- description (string)
+- group (string, e.g., "Submission", "Offer", "Deal", "Admin")
+
+6) RolePermission
+- id
+- roleId
+- permissionId
+- scope (enum: OWN | ASSIGNED | TEAM | ORG | GLOBAL)
+- allowed (boolean)
+- unique(roleId, permissionId)
+
+7) FieldRule (optional but included)
+- id
+- roleId
+- resource (string, e.g., "Submission", "Deal")
+- field (string, e.g., "commissionSplit")
+- access (enum: READONLY | HIDDEN | EDITABLE)
+- unique(roleId, resource, field)
+
+8) PolicyVersion
+- id
+- organizationId (nullable for platform-global defaults)
+- status (enum: DRAFT | PUBLISHED | ARCHIVED)
+- versionNumber (int)
+- publishedAt (nullable)
+- createdByUserId
+- createdAt
+
+9) PolicySnapshot
+- id
+- policyVersionId
+- snapshotJson (jsonb)  // full copy of roles/permissions/field rules for rollback
+- createdAt
+
+10) AuditLog
+- id
+- actorUserId
+- organizationId (nullable)
+- action (string)
+- entityType (string)
+- entityId (string)
+- metadata (jsonb)
+- createdAt
+
+--------------------------------------------
+SEED DATA
+--------------------------------------------
+Seed:
+A) Default permissions (create a solid list):
+ORG:VIEW, ORG:MANAGE_USERS, ORG:MANAGE_SETTINGS
+SUBMISSION:CREATE, SUBMISSION:VIEW, SUBMISSION:EDIT, SUBMISSION:ASSIGN, SUBMISSION:SET_STATUS, SUBMISSION:ADD_NOTES
+DOC:UPLOAD, DOC:VIEW, DOC:REQUEST, DOC:DELETE
+OFFER:VIEW, OFFER:ISSUE, OFFER:COUNTER, OFFER:APPROVE, OFFER:DECLINE, OFFER:ACCEPT, OFFER:WITHDRAW
+DEAL:VIEW, DEAL:ADVANCE_STAGE, DEAL:FUND, DEAL:UPDATE_PERFORMANCE
+COMMISSION:VIEW, COMMISSION:CALCULATE, COMMISSION:MARK_PAID, COMMISSION:DISPUTE
+AUDIT:VIEW, AUDIT:WRITE
+EXPORT:SUBMISSIONS, EXPORT:DEALS, EXPORT:FINANCIALS
+MESSAGE:SEND, MESSAGE:VIEW
+
+B) Default roles (system roles):
+PLATFORM: SUPER_ADMIN, PLATFORM_SUPPORT, COMPLIANCE_AUDITOR, ACCOUNTING
+ISO: ISO_OWNER, ISO_MANAGER, SENIOR_BROKER, JUNIOR_BROKER
+LENDER: LENDER_ADMIN, UNDERWRITER, FUNDING_DESK, PORTFOLIO_MANAGER
+MERCHANT: MERCHANT
+ANY: CLOSING_AGENT
+SYSTEM: SYSTEM_BOT (no UI login)
+
+C) Map roles -> permissions + scopes (reasonable defaults):
+- SUPER_ADMIN: all permissions scope GLOBAL allowed true
+- PLATFORM_SUPPORT: view-only; no DEAL:FUND, no COMMISSION:MARK_PAID, no EXPORT:FINANCIALS
+- COMPLIANCE_AUDITOR: read-only + AUDIT:VIEW
+- ACCOUNTING: DEAL:VIEW, COMMISSION:* (except underwriting/offer actions), EXPORT:FINANCIALS, AUDIT:VIEW
+- ISO_OWNER: most ISO actions ORG scope; commissions ORG; user mgmt ORG
+- ISO_MANAGER: submission/team workflow; no org settings; limited commission
+- SENIOR_BROKER: create/edit/view own/assigned; offer accept/counter; commission view OWN
+- JUNIOR_BROKER: create/edit own; no offer accept; no commission
+- LENDER_ADMIN: offer issue/approve/decline; org user mgmt; scope ORG
+- UNDERWRITER: submission view assigned; add notes/stips; no funding
+- FUNDING_DESK: deal fund; doc request/upload; messages; no offer issue
+- PORTFOLIO_MANAGER: deal performance + export deals
+- MERCHANT: view self submission + upload self docs only
+
+Also seed:
+- Platform organization (type PLATFORM)
+- Create first SUPER_ADMIN user and membership in Platform org
+
+--------------------------------------------
+RUNTIME AUTH + ENFORCEMENT
+--------------------------------------------
+Implement:
+1) Active Organization selection (org switcher)
+- store activeOrgId in session/token
+- API uses activeOrgId to scope access
+
+2) Permission evaluation function:
+hasPermission(userId, activeOrgId, permissionKey, resourceContext)
+- Loads membership roleId
+- Loads RolePermission rows
+- Enforces allowed + scope
+- Scope logic uses context:
+  - OWN: record.createdByUserId == userId
+  - ASSIGNED: record.assignedToUserId == userId
+  - TEAM: record.teamId matches user team (optional) OR same org with manager relationship
+  - ORG: record.organizationId == activeOrgId
+  - GLOBAL: platform-level access
+
+3) Field-level enforcement on writes:
+applyFieldRules(roleId, resource, incomingData)
+- remove/deny fields that are READONLY/HIDDEN
+- throw an error if user tries to modify a READONLY/HIDDEN field
+
+4) Middleware:
+requireAuth()
+requireOrg()
+requirePermission("SUBMISSION:EDIT")
+All API routes must use middleware, no hardcoded role checks.
+
+--------------------------------------------
+SUPER ADMIN UI (OPTION A: INSIDE APP)
+--------------------------------------------
+Build an admin area gated by permission: ORG:MANAGE_SETTINGS (and SUPER_ADMIN).
+
+Pages:
+1) /admin/policy
+- Choose Organization (platform or a specific org)
+- Shows current policy status (Draft/Published) and version
+
+2) Role Manager
+- List roles (filter by orgType)
+- Create role (clone from existing recommended)
+- Edit role name/key (key immutable after creation)
+- Delete role only if isSystem=false and not assigned
+
+3) Permission Matrix Editor
+- A table: roles (left) x permissions (top)
+- Each cell: toggle allowed/denied
+- Each cell: scope dropdown (OWN/ASSIGNED/TEAM/ORG/GLOBAL)
+- Search permissions + group by resource
+
+4) Field Rules Editor
+- Pick role
+- Pick resource (Submission/Deal/Offer)
+- Add field rules (field, access)
+- Example: Junior broker cannot edit “commissionSplit”, “buyRate”, “lenderRouting”
+
+5) Org Member Manager
+- List members in org
+- Invite user by email (creates user if not exist)
+- Assign role per organization
+- Disable member access
+
+6) Policy Versioning
+- Draft → Publish workflow
+- Publishing creates PolicySnapshot jsonb and increments versionNumber
+- Rollback button: restore from snapshot and republish as new version
+- Show diff summary (permissions changed count is enough)
+
+--------------------------------------------
+GUARDRAILS (MANDATORY)
+--------------------------------------------
+Implement hard safety rules:
+- You cannot remove the last SUPER_ADMIN from the PLATFORM org
+- You cannot delete system roles (isSystem=true)
+- You cannot publish a policy that leaves org with zero admins (e.g., no role has ORG:MANAGE_USERS)
+- Break-glass endpoint protected by an env var token:
+  POST /api/admin/break-glass/restore-super-admin
+  - reassigns requesting user to SUPER_ADMIN in PLATFORM org
+  - logs AuditLog
+- Every policy change writes an AuditLog event (who changed what)
+
+--------------------------------------------
+API ROUTES (EXAMPLES)
+--------------------------------------------
+Create sample protected routes:
+- POST /api/admin/roles (requires ORG:MANAGE_SETTINGS)
+- PATCH /api/admin/roles/:id
+- POST /api/admin/permissions/toggle
+- POST /api/admin/policy/publish
+- POST /api/admin/policy/rollback
+- GET /api/me (returns memberships + activeOrgId + permissions for UI gating)
+
+--------------------------------------------
+DELIVERABLES
+--------------------------------------------
+Output:
+- Prisma schema + migrations
+- Seed script
+- RBAC middleware + hasPermission + field-rule enforcement
+- Admin UI pages (role manager, permission matrix, field rules, policy versioning)
+- Audit logs and guardrails implemented
+- Clean, typed code, no magic strings
+
+Make sure the app runs end-to-end with a seeded SUPER_ADMIN who can log in, switch orgs, edit roles/permissions, publish policy, and see changes reflected immediately in permission checks.
