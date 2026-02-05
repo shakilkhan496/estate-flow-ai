@@ -15,10 +15,13 @@ function getJwtSecret(): string {
 
 const TOKEN_NAME = 'mca_token';
 
+export type UserRole = 'admin' | 'manager' | 'broker' | 'user';
+
 export interface TokenPayload {
   userId: string;
   email: string;
   name: string;
+  role: UserRole;
 }
 
 export interface AuthResult {
@@ -27,6 +30,7 @@ export interface AuthResult {
     id: string;
     email: string;
     name: string;
+    role: UserRole;
     activeOrganizationId: string | null;
   };
   error?: string;
@@ -136,6 +140,7 @@ export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
         id: user._id.toString(),
         email: user.email,
         name: user.name,
+        role: user.role || 'user',
         activeOrganizationId: user.activeOrganizationId?.toString() || null,
       },
     };
@@ -144,5 +149,3 @@ export async function verifyAuth(request: NextRequest): Promise<AuthResult> {
     return { success: false, error: 'Authentication failed' };
   }
 }
-
-export type UserRole = 'admin' | 'manager' | 'broker' | 'user';

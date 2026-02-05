@@ -1,18 +1,37 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
+import dbConnect from '@/lib/mongodb';
+import User from '@/lib/models/User';
 
 export async function GET() {
   try {
-    const user = await getCurrentUser();
+    const tokenUser = await getCurrentUser();
     
-    if (!user) {
+    if (!tokenUser) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
+
+    await dbConnect();
+    const user = await User.findById(tokenUser.userId).select('-password');
     
-    return NextResponse.json({ user });
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 401 }
+      );
+    }
+    
+    return NextResponse.json({ 
+      user: {
+        userId: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        role: user.role || 'user',
+      }
+    });
   } catch (error) {
     console.error('Get user error:', error);
     return NextResponse.json(
