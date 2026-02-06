@@ -300,7 +300,7 @@ export default function UsersPage() {
           <RefreshCw className="w-8 h-8 animate-spin text-blue-600" />
         </div>
       ) : (
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredUsers.map((user) => (
             <motion.div key={user._id} variants={itemVariants}>
               <Card className={`hover:shadow-md transition-shadow ${!user.isActive ? 'opacity-60' : ''}`}>
