@@ -152,3 +152,70 @@ export const seedTasks = () => async () => {
     return { success: false };
   }
 };
+
+export const bulkDeleteTasks = (taskIds: string[]) => async (dispatch: AppDispatch) => {
+  try {
+    const res = await fetch('/api/tasks/items/bulk', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskIds }),
+    });
+    if (res.ok) {
+      taskIds.forEach(id => dispatch(removeTask(id)));
+      return { success: true };
+    }
+    return { success: false };
+  } catch {
+    return { success: false };
+  }
+};
+
+export const bulkUpdateTasks = (taskIds: string[], updates: Record<string, unknown>, listId?: string) => async (dispatch: AppDispatch) => {
+  try {
+    const res = await fetch('/api/tasks/items/bulk', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskIds, updates }),
+    });
+    if (res.ok) {
+      if (listId) {
+        const query = new URLSearchParams({ listId }).toString();
+        const tasksRes = await fetch(`/api/tasks/items?${query}`);
+        if (tasksRes.ok) {
+          const data = await tasksRes.json();
+          dispatch(setTasks(data.tasks));
+        }
+      }
+      return { success: true };
+    }
+    return { success: false };
+  } catch {
+    return { success: false };
+  }
+};
+
+export const fetchTeamMembers = async (): Promise<Array<{ _id: string; name: string; email: string; role: string }>> => {
+  try {
+    const res = await fetch('/api/tasks/members');
+    if (res.ok) {
+      const data = await res.json();
+      return data.members || [];
+    }
+    return [];
+  } catch {
+    return [];
+  }
+};
+
+export const fetchTaskTemplates = async (): Promise<Array<{ id: string; name: string; description: string; priority: string; checklist: Array<{ id: string; text: string; completed: boolean }>; tags: string[] }>> => {
+  try {
+    const res = await fetch('/api/tasks/templates');
+    if (res.ok) {
+      const data = await res.json();
+      return data.templates || [];
+    }
+    return [];
+  } catch {
+    return [];
+  }
+};

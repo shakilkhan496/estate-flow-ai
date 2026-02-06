@@ -75,9 +75,13 @@ function getStatusInfo(statusId: string | TaskStatusItem, statuses: TaskStatusIt
   return found ? { name: found.name, color: found.color } : { name: 'Unknown', color: '#64748b' };
 }
 
-function getAssigneeName(assigneeId: TaskUser | string | null): string {
+function getAssigneeName(assigneeId: TaskUser | string | null, teamMembers: Array<{ _id: string; name: string }> = []): string {
   if (!assigneeId) return 'Unassigned';
   if (typeof assigneeId === 'object') return assigneeId.name;
+  if (typeof assigneeId === 'string') {
+    const found = teamMembers.find(m => m._id === assigneeId);
+    return found ? found.name : 'Assigned';
+  }
   return 'Unassigned';
 }
 
@@ -86,7 +90,11 @@ function getUserName(user: { _id: string; name: string } | string): string {
   return 'Unknown';
 }
 
-export default function TaskDetailModal() {
+interface ModalProps {
+  teamMembers?: Array<{ _id: string; name: string; email: string; role: string }>;
+}
+
+export default function TaskDetailModal({ teamMembers = [] }: ModalProps) {
   const dispatch = useAppDispatch();
   const selectedTaskId = useAppSelector(selectSelectedTaskId);
   const tasks = useAppSelector(selectTasks);
@@ -468,11 +476,12 @@ export default function TaskDetailModal() {
                   )}
                 </div>
 
-                {/* Assignee */}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900/50 border border-slate-700 text-sm text-slate-300">
-                  <User className="w-3.5 h-3.5 text-slate-500" />
-                  {getAssigneeName(task.assigneeId)}
-                </div>
+                {/* Assignee Picker */}
+                <AssigneePicker
+                  task={task}
+                  teamMembers={teamMembers}
+                  onAssign={(assigneeId) => dispatch(editTask(task._id, { assigneeId }) as any)}
+                />
 
                 {/* Due Date */}
                 <div className="relative">
@@ -829,3 +838,66 @@ export default function TaskDetailModal() {
   );
 }
 
+function AssigneePicker({
+  task,
+  teamMembers,
+  onAssign,
+}: {
+  task: TaskItem;
+  teamMembers: Array<{ _id: string; name: string; email: string; role: string }>;
+  onAssign: (assigneeId: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900/50 border border-slate-700 text-sm text-slate-300 hover:border-cyan-500/50 transition-colors"
+      >
+        <User className="w-3.5 h-3.5 text-slate-500" />
+        {getAssigneeName(task.assigneeId, teamMembers)}
+        <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+      </button>
+      {open && (
+        <div className="absolute top-full mt-1 left-0 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-20 min-w-[200px] py-1 overflow-hidden max-h-[250px] overflow-y-auto">
+          <button
+            onClick={() => { onAssign(null); setOpen(false); }}
+            className="w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-slate-700/50 text-slate-400"
+          >
+            <div className="w-6 h-6 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-[10px] text-slate-400">?</div>
+            Unassigned
+          </button>
+          {teamMembers.map(m => {
+            const isActive = typeof task.assigneeId === 'string' ? task.assigneeId === m._id : (typeof task.assigneeId === 'object' && task.assigneeId?._id === m._id);
+            return (
+              <button
+                key={m._id}
+                onClick={() => { onAssign(m._id); setOpen(false); }}
+                className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-slate-700/50 transition-colors ${isActive ? 'text-white bg-slate-700/30' : 'text-slate-300'}`}
+              >
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-500/30 to-blue-600/30 border border-slate-600 flex items-center justify-center text-[10px] font-bold text-cyan-300">
+                  {m.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="truncate">{m.name}</div>
+                  <div className="text-[10px] text-slate-500 truncate">{m.email}</div>
+                </div>
+                {isActive && <Check className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

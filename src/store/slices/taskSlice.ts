@@ -79,6 +79,9 @@ interface TaskState {
   filterPriority: string;
   filterAssignee: string;
   filterMyTasks: boolean;
+  sortBy: 'position' | 'dueDate' | 'priority' | 'createdAt' | 'title';
+  sortDirection: 'asc' | 'desc';
+  selectedTaskIds: string[];
 }
 
 const initialState: TaskState = {
@@ -96,6 +99,9 @@ const initialState: TaskState = {
   filterPriority: '',
   filterAssignee: '',
   filterMyTasks: false,
+  sortBy: 'position',
+  sortDirection: 'asc',
+  selectedTaskIds: [],
 };
 
 const taskSlice = createSlice({
@@ -155,6 +161,27 @@ const taskSlice = createSlice({
     setFilterMyTasks: (state, action: PayloadAction<boolean>) => {
       state.filterMyTasks = action.payload;
     },
+    setSortBy: (state, action: PayloadAction<TaskState['sortBy']>) => {
+      state.sortBy = action.payload;
+    },
+    setSortDirection: (state, action: PayloadAction<TaskState['sortDirection']>) => {
+      state.sortDirection = action.payload;
+    },
+    toggleTaskSelection: (state, action: PayloadAction<string>) => {
+      const taskId = action.payload;
+      const index = state.selectedTaskIds.indexOf(taskId);
+      if (index !== -1) {
+        state.selectedTaskIds.splice(index, 1);
+      } else {
+        state.selectedTaskIds.push(taskId);
+      }
+    },
+    selectAllTasks: (state, action: PayloadAction<string[]>) => {
+      state.selectedTaskIds = action.payload;
+    },
+    clearTaskSelection: (state) => {
+      state.selectedTaskIds = [];
+    },
   },
 });
 
@@ -164,6 +191,7 @@ export const {
   setSelectedSpace, setSelectedList, setSelectedTask,
   setViewMode, setLoading, setError,
   setSearchTerm, setFilterPriority, setFilterAssignee, setFilterMyTasks,
+  setSortBy, setSortDirection, toggleTaskSelection, selectAllTasks, clearTaskSelection,
 } = taskSlice.actions;
 
 export default taskSlice.reducer;
