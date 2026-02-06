@@ -150,12 +150,13 @@ export default function TasksPage() {
 
   const handleQuickAdd = async (statusId?: string) => {
     const title = statusId ? boardQuickAdd[statusId] : quickAddTitle;
-    if (!title?.trim() || !selectedListId) return;
+    if (!title?.trim() || !selectedListId || !selectedSpaceId) return;
     const firstStatus = statusId || (statuses.length > 0 ? statuses[0]._id : '');
     if (!firstStatus) return;
     await dispatch(createTask({
       title: title.trim(),
       listId: selectedListId,
+      spaceId: selectedSpaceId,
       statusId: firstStatus,
       priority: 'medium',
     }) as never);
