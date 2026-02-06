@@ -1,7 +1,7 @@
 # MCA Pilot - Merchant Cash Advance CRM
 
 ## Overview
-MCA Pilot is a comprehensive CRM platform for Merchant Cash Advance (MCA) brokers and ISOs. It provides deal pipeline management, document handling, underwriting tools, and role-based access control.
+MCA Pilot is a comprehensive CRM platform for Merchant Cash Advance (MCA) brokers and ISOs. It provides deal pipeline management, document handling, underwriting tools, role-based access control, and a full Task & Work Management module.
 
 ## User Preferences
 - Preferred communication style: Simple, everyday language
@@ -9,16 +9,29 @@ MCA Pilot is a comprehensive CRM platform for Merchant Cash Advance (MCA) broker
 - Use Redux Toolkit for state management
 - Always use mobile responsive design for all pages
 - Use Framer Motion for animations
+- Futuristic dark theme for admin/task pages (slate gradients, glassmorphism, cyan/blue accents)
 
 ## Project Structure
 ```
 app/
 ├── api/auth/              # Authentication API routes
+├── api/tasks/             # Task module API routes
+│   ├── spaces/            # CRUD for task spaces (workspaces)
+│   ├── lists/             # CRUD for task lists
+│   ├── statuses/          # Task status management
+│   ├── items/             # CRUD for tasks, subtasks
+│   │   └── [id]/          # Single task operations
+│   │       ├── comments/  # Task comments
+│   │       └── activity/  # Task activity log
+│   └── seed/              # Seed demo task data
 ├── auth/                  # Sign in/Sign up pages
 ├── dashboard/             # Protected dashboard pages
 │   ├── page.tsx           # Dashboard home
 │   ├── layout.tsx         # Dashboard layout with sidebar
 │   ├── deals/             # Deals with Table & Pipeline views
+│   ├── tasks/             # Task & Work Management module
+│   │   ├── page.tsx       # Tasks page with List/Board/Calendar views
+│   │   └── TaskDetailModal.tsx  # Task detail modal component
 │   ├── documents/         # Documents management page
 │   ├── team/              # Users management page (create, edit, delete users)
 │   ├── settings/          # Settings page
@@ -34,16 +47,34 @@ src/
 │   └── ui/                # shadcn/ui components
 ├── lib/
 │   ├── auth.ts            # Authentication utilities
-│   ├── models/User.ts     # User model
+│   ├── models/            # Mongoose models
+│   │   ├── User.ts
+│   │   ├── TaskSpace.ts   # Task workspace/space model
+│   │   ├── TaskList.ts    # Task list model
+│   │   ├── TaskStatus.ts  # Task status model (per-list)
+│   │   ├── Task.ts        # Task model (with subtasks, checklists, CRM links)
+│   │   ├── TaskComment.ts # Threaded comments on tasks
+│   │   ├── TaskActivity.ts # Activity/audit log for tasks
+│   │   └── index.ts       # Model exports
 │   ├── mongodb.ts         # MongoDB connection
 │   └── utils.ts
 └── store/                 # Redux Toolkit store
-    ├── index.ts           # Store configuration
+    ├── index.ts           # Store configuration (auth, ui, adminConfig, tasks)
     ├── hooks.ts           # Typed hooks
-    ├── StoreProvider.tsx  # Provider wrapper
-    ├── slices/            # Redux slices
-    ├── actions/           # Async actions
-    └── selectors/         # Memoized selectors
+    ├── StoreProvider.tsx   # Provider wrapper
+    ├── slices/
+    │   ├── authSlice.ts
+    │   ├── uiSlice.ts
+    │   ├── adminConfigSlice.ts
+    │   └── taskSlice.ts   # Task module state management
+    ├── actions/
+    │   ├── authActions.ts
+    │   └── taskActions.ts # Task CRUD async actions
+    └── selectors/
+        ├── authSelectors.ts
+        ├── uiSelectors.ts
+        ├── adminConfigSelectors.ts
+        └── taskSelectors.ts # Task memoized selectors
 ```
 
 ## Key Features
@@ -68,62 +99,79 @@ src/
 
 ## Dashboard Pages
 - **Dashboard** - Overview with stats and recent deals
-- **Users** - Full user management with create, edit, deactivate features. Includes:
-  - User cards with name, email, phone, role, and status
-  - Add new user with name, email, phone, password, and role
-  - Edit existing users including password reset
-  - Activate/deactivate users
-  - Search and filter users
-- **Deals** - Combined view with toggle between Table and Pipeline modes:
-  - **Table View** - Full spreadsheet with columns (Company, Deal ID, Status, Flags, DBA, Owner, Phone, Email, Products, Notes, Originators, Closers, Date Created/Updated, GURL, Max Offer, Monthly Rev, Owners count)
-  - **Pipeline View** - Kanban board with 15 stages (New Application, Missing Documents, Ready to Submit, Submitted, Resubmitting, Approved, Offer Selected, Offer Pitched, Repricing, Offer Accepted, Received DL/VC, Contracts Requested, Contracts Sent, Contracts Signed, Final Review). Features include:
-    - Drag-and-drop deals between stages
-    - Compact/Expanded card toggle (show just company name or full details)
-    - Last activity timestamps on deal cards
-    - Stage transition history tracking (records when deals move between stages)
-    - Sticky stage headers with synchronized horizontal scrolling
-    - Inline "Next" button to move deals to next stage without dragging
-    - Stage collapsing - click X on stage header to collapse, click collapsed stage to expand
-    - "Hide All Stages" / "Show All Stages" buttons for quick bulk collapse/expand
-- **Offers** - Offers table with columns: Deal, Funder, Status, Amount, Rate, Payback, Term, Payment, Commission, Phone, Notes, Tags, AI, Originator, Created. Includes search, filters, sorting, pagination, and CSV export
-- **Submissions** - Funder submission tracking with status (declined, approved, sent, errored), responses, AI flags, pagination
+- **Users** - Full user management with create, edit, deactivate features
+- **Deals** - Combined view with toggle between Table and Pipeline modes
+- **Offers** - Offers table with search, filters, sorting, pagination, CSV export
+- **Submissions** - Funder submission tracking
+- **Tasks** - Full Task & Work Management module (see below)
 - **Documents** - Document management with file listings
 - **Team** - Team member cards with stats (Admin/Manager only)
 - **Settings** - Account, notifications, security settings
 - **Super Admin** - Configure deal statuses, flags, products, originators, closers (Admin only)
 
+## Task & Work Management Module
+ClickUp-like task management system with:
+
+### Hierarchy
+- **Space** (workspace area, e.g., "Sales Ops", "Underwriting")
+- **List** (where tasks live, belongs to a space)
+- **Task** (with subtasks, checklists, comments)
+
+### Data Models
+- **TaskSpace** - Workspace areas with name, color, icon
+- **TaskList** - Lists within spaces, auto-creates default statuses
+- **TaskStatus** - Per-list statuses (To Do, In Progress, Review, Blocked, Done) with types (open/in_progress/blocked/done)
+- **Task** - Full task with title, description, priority (low/medium/high/urgent), dates, assignee, watchers, tags, checklist items, CRM entity links, custom fields
+- **TaskComment** - Threaded comments with @mentions
+- **TaskActivity** - Activity log tracking status changes, assignee changes, etc.
+
+### Three Views
+1. **List View** - Table layout with columns (Title, Status, Priority, Assignee, Due Date, Tags), quick-add row, inline editing
+2. **Board/Kanban View** - Drag-and-drop columns by status, task cards with priority badges, assignee avatars, quick-add per column
+3. **Calendar View** - Monthly grid showing tasks by due date, day detail panel, prev/next navigation
+
+### Task Detail Modal
+- Editable title and description (click-to-edit)
+- Status and priority selectors
+- Due date picker
+- Checklist with progress bar
+- Subtasks list with add functionality
+- CRM entity links (lead, merchant, deal, submission, offer, funding, etc.)
+- Threaded comments
+- Activity timeline
+- Delete/archive actions
+
+### API Routes
+- `/api/tasks/spaces` - Space CRUD
+- `/api/tasks/lists` - List CRUD (auto-creates default statuses)
+- `/api/tasks/statuses` - Status management per list
+- `/api/tasks/items` - Task CRUD with filtering (by list, space, assignee, status, priority, search, date range)
+- `/api/tasks/items/[id]` - Single task with subtasks
+- `/api/tasks/items/[id]/comments` - Task comments
+- `/api/tasks/items/[id]/activity` - Task activity log
+- `/api/tasks/seed` - Seed demo data (admin only)
+
+### MCA-Specific Demo Data (via seed)
+- Sales Ops space: Lead Intake, Submission Packaging lists
+- Underwriting space: Underwriting Review, Offer Follow-up lists
+- Funding & Collections space: Funding & Closing, Renewals lists
+- Sample tasks with checklists, priorities, tags
+
 ## Role-Based Access Control (RBAC)
-The app includes a comprehensive RBAC system with:
+The app includes a comprehensive RBAC system with futuristic Role Builder UI.
 
 ### Data Models
 - **Organization** - PLATFORM, ISO, LENDER, MERCHANT types
 - **Role** - System and custom roles with organization type binding
-- **Permission** - 40+ permissions grouped by resource (Submission, Deal, Offer, etc.)
-- **RolePermission** - Maps roles to permissions with scopes (OWN, ASSIGNED, TEAM, ORG, GLOBAL)
-- **FieldRule** - Field-level access rules (READONLY, HIDDEN, EDITABLE)
+- **Permission** - 40+ permissions grouped by resource
+- **RolePermission** - Maps roles to permissions with scopes
+- **FieldRule** - Field-level access rules
 - **PolicyVersion/PolicySnapshot** - Versioned policy with publish/rollback
 - **AuditLog** - Tracks all RBAC changes
 
-### Default Roles
-- PLATFORM: SUPER_ADMIN, PLATFORM_SUPPORT, COMPLIANCE_AUDITOR, ACCOUNTING
-- ISO: ISO_OWNER, ISO_MANAGER, SENIOR_BROKER, JUNIOR_BROKER
-- LENDER: LENDER_ADMIN, UNDERWRITER, FUNDING_DESK, PORTFOLIO_MANAGER
-- MERCHANT: MERCHANT
-- ANY: CLOSING_AGENT
-
 ### Admin UI
-- **Role Builder** (/dashboard/admin/roles) - Permission matrix editor
+- **Role Builder** (/dashboard/admin/roles) - Futuristic permission matrix editor with dark theme
 - **Members** (/dashboard/admin/members) - Invite/manage team members
-
-### API Routes
-- `/api/admin/roles` - Role CRUD
-- `/api/admin/permissions/matrix` - Permission matrix
-- `/api/admin/permissions/toggle` - Toggle permissions
-- `/api/admin/members` - Member management
-- `/api/admin/policy/publish` - Publish policy
-- `/api/admin/policy/rollback` - Rollback to snapshot
-- `/api/admin/break-glass/restore-super-admin` - Emergency access restore
-- `/api/me` - Current user with permissions
 
 ## Environment Variables
 - `MONGODB_URI` - MongoDB connection string
@@ -138,13 +186,12 @@ npm run start    # Production server
 ```
 
 ## Recent Changes
-- Added Framer Motion for smooth animations
-- Created animated sidebar with mobile hamburger menu
-- Built responsive dashboard layout
-- Created Deals page with full table view matching MCA CRM standards
-- Created Documents page with file management
-- Created Team page with member cards
-- Created Settings page with account options
-- Added Super Admin page for configuring deal options (statuses, flags, products, originators, closers)
-- Sidebar state persists via localStorage
-- All pages are fully mobile responsive
+- Built complete Task & Work Management module with List, Board, Calendar views
+- Created TaskDetailModal with subtasks, checklists, comments, CRM linking, activity log
+- Added 6 Mongoose models for task system (TaskSpace, TaskList, TaskStatus, Task, TaskComment, TaskActivity)
+- Built full REST API for task management with filtering and activity tracking
+- Added Redux slice, actions, and selectors for task state management
+- Added seed endpoint for demo task data
+- Added Tasks link to sidebar navigation
+- Redesigned Role Builder page with futuristic dark theme UI
+- Dynamic company name in sidebar from Redux state

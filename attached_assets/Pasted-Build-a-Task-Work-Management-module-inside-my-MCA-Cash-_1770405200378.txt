@@ -1,0 +1,144 @@
+Build a “Task & Work Management” module inside my MCA Cash Advance CRM that feels like ClickUp.
+
+GOAL
+Create tasks, subtasks, checklists, comments, attachments, due dates, priorities, statuses, assignees, watchers, time tracking, and automations. Tasks must link to CRM entities (Lead, Merchant, Submission, Deal/Offer, Funding, ISO/Broker, Lender, Underwriter). Support both list view and kanban view, plus a simple calendar view.
+
+STACK / APP
+
+
+CORE CONCEPTS (CLICKUP-LIKE HIERARCHY)
+Implement hierarchy:
+- Workspace (the company using the CRM)
+- Space (e.g., “Sales Ops”, “Underwriting”, “Collections”)
+- Folder (optional)
+- List (where tasks live)
+- Task
+- Subtask
+- Checklist items
+Also allow “Views” saved per list: List view, Board view (kanban by status), Calendar view (by due date).
+
+ROLES & PERMISSIONS (RBAC)
+Multi-tenant. Every record belongs to a workspace.
+Roles:
+- Super Admin (platform)
+- Workspace Owner (company admin)
+- Manager
+- Agent
+- Read-only
+Rules:
+- Only Workspace Owner/Manager can create spaces/lists, manage statuses, and create automations.
+- Agents can create tasks if permitted, assign to themselves or within their team, and edit tasks they own or are assigned to.
+- Read-only can view but not edit.
+Support granular permissions per Space/List:
+- can_view, can_create, can_edit, can_delete, can_assign, can_manage_statuses, can_manage_automations
+
+TASK DATA MODEL (REQUIRED)
+Task fields:
+- id, workspaceId, spaceId, folderId?, listId
+- title, description (rich text), statusId, priority (low/med/high/urgent)
+- startDate?, dueDate?, completedAt?
+- assigneeId?, createdById
+- watchers (many-to-many)
+- tags (many-to-many)
+- points/effort?, timeEstimateMinutes?, timeTrackedMinutes
+- position (for ordering within list/board column)
+- parentTaskId? (for subtasks)
+- externalLinks (array)
+- crmLinks: array of references to CRM objects (Lead/Merchant/Submission/Deal/Offer/Funding/etc)
+- customFields (JSONB per list) with types: text, number, date, select, multi-select, checkbox, user, money
+
+Statuses:
+- statusId, name, color, type (open/in_progress/blocked/done)
+Allow per-list status sets and workflow.
+
+Comments:
+- threaded comments on tasks with @mentions
+- comment reactions optional
+Attachments:
+- file uploads + link attachments
+Activity log:
+- record changes to status, assignee, due date, fields, comments
+
+VIEWS (UI)
+1) List view:
+- Table-like with columns (status, assignee, due date, priority, tags, linked deal, etc)
+- Quick add task row
+- Inline edit for key fields
+- Filters: status, assignee, due date range, priority, tags, “linked to deal”, “my tasks”
+- Sorting + saved filters per user
+
+2) Board view:
+- Kanban columns based on status
+- Drag/drop tasks between statuses and reorder within column
+- WIP limits optional
+- Swimlanes optional (by assignee or by linked deal)
+
+3) Calendar view:
+- Show tasks by due date
+- Drag to change due date
+
+TASK AUTOMATIONS (MCA-SPECIFIC)
+Add an “Automations” builder (simple rules, not overly complex):
+Trigger types:
+- Task created
+- Status changed
+- Due date reached/overdue
+- CRM event: New lead created, submission created, offer created, funding marked, merchant missing docs, etc.
+Conditions:
+- if space/list matches
+- if linked object type is Deal/Lead/etc
+- if amount range (for deals)
+- if lender = X, broker = Y, stage = Z
+Actions:
+- create a task in a list
+- assign task to a user/role (e.g., Underwriter role queue)
+- set priority
+- set due date (e.g., +2 hours, +1 day)
+- add watchers
+- post a comment template
+- send notification (in-app + email optional)
+Provide a UI where managers can create rules with dropdowns.
+
+MCA WORKFLOWS (DEFAULT TEMPLATES)
+Ship with templates:
+- “New Lead Intake” checklist tasks
+- “Submission Packaging” tasks (collect docs, verify bank statements, run underwriting checks)
+- “Underwriting Review” tasks with SLA due dates
+- “Offer Sent Follow-up” tasks
+- “Funding & Closing” tasks
+- “Post-Funding Collections / Renewals” tasks
+
+NOTIFICATIONS
+In-app notifications for:
+- assigned to you
+- mentioned in comments
+- status changed on tasks you watch
+- due date upcoming/overdue
+Email notifications optional toggle.
+
+SEARCH
+Global search across tasks by title/description/comments and filter by linked CRM entity.
+
+API
+Build clean REST/JSON endpoints (or tRPC) for:
+- CRUD spaces/folders/lists
+- CRUD tasks/subtasks/checklists
+- comments, attachments
+- statuses, custom fields
+- views, filters
+- automations (rules)
+
+DATABASE / PRISMA
+Provide Prisma schema and migrations.
+Use JSONB for customFields values.
+Ensure indexes on workspaceId, listId, assigneeId, dueDate, statusId, and crmLinks.
+
+QUALITY REQUIREMENTS
+- Multi-tenant safe (no cross-workspace access)
+- Validation + error handling
+- Audit log for key events
+- Seed script to create demo workspace with sample tasks + statuses
+- Clean UI similar to ClickUp: left sidebar (spaces/lists), main area (view switcher), top filters/search
+- Mobile responsive basics
+
+

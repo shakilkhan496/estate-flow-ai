@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import uiReducer from './slices/uiSlice';
 import adminConfigReducer from './slices/adminConfigSlice';
+import taskReducer from './slices/taskSlice';
 
 export const makeStore = () => {
   return configureStore({
@@ -9,6 +10,7 @@ export const makeStore = () => {
       auth: authReducer,
       ui: uiReducer,
       adminConfig: adminConfigReducer,
+      tasks: taskReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({

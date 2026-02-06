@@ -27,3 +27,21 @@ export type { IPolicySnapshot } from './PolicySnapshot';
 
 export { default as AuditLog } from './AuditLog';
 export type { IAuditLog } from './AuditLog';
+
+export { default as TaskSpace } from './TaskSpace';
+export type { ITaskSpace } from './TaskSpace';
+
+export { default as TaskList } from './TaskList';
+export type { ITaskList } from './TaskList';
+
+export { default as TaskStatus } from './TaskStatus';
+export type { ITaskStatus, StatusType } from './TaskStatus';
+
+export { default as Task } from './Task';
+export type { ITask, TaskPriority, ICrmLink, IChecklistItem } from './Task';
+
+export { default as TaskComment } from './TaskComment';
+export type { ITaskComment } from './TaskComment';
+
+export { default as TaskActivity } from './TaskActivity';
+export type { ITaskActivity, ActivityAction } from './TaskActivity';

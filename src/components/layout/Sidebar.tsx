@@ -19,6 +19,7 @@ import {
   Shield,
   Send,
   DollarSign,
+  CheckSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,7 @@ const menuItems = [
   { name: 'Deals', href: '/dashboard/deals', icon: TrendingUp },
   { name: 'Offers', href: '/dashboard/offers', icon: DollarSign },
   { name: 'Submissions', href: '/dashboard/submissions', icon: Send },
+  { name: 'Tasks', href: '/dashboard/tasks', icon: CheckSquare },
   { name: 'Documents', href: '/dashboard/documents', icon: FolderOpen },
   { name: 'Users', href: '/dashboard/team', icon: Users, requiresManager: true },
   { name: 'Settings', href: '/dashboard/settings', icon: Settings },
