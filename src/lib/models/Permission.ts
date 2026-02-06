@@ -31,7 +31,6 @@ const PermissionSchema = new Schema<IPermission>(
   }
 );
 
-PermissionSchema.index({ key: 1 }, { unique: true });
 PermissionSchema.index({ group: 1 });
 
 const Permission: Model<IPermission> = 

@@ -46,21 +46,26 @@ const PRESET_COLORS = ['#3b82f6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#
 interface TeamMember { _id: string; name: string; email: string; role: string; }
 interface TaskTemplate { id: string; name: string; description: string; priority: string; checklist: Array<{ id: string; text: string; completed: boolean }>; tags: string[]; }
 
-function getStatusInfo(statusId: string | TaskStatusItem): { id: string; name: string; color: string } {
+function getStatusInfo(statusId: string | TaskStatusItem | null | undefined): { id: string; name: string; color: string } {
+  if (!statusId) return { id: '', name: 'Unknown', color: '#64748b' };
   if (typeof statusId === 'object' && statusId !== null) {
     return { id: statusId._id, name: statusId.name, color: statusId.color };
   }
   return { id: statusId, name: 'Unknown', color: '#64748b' };
 }
 
-function getAssigneeName(assigneeId: TaskUser | string | null): string {
+function getAssigneeName(assigneeId: TaskUser | string | null, members: Array<{ _id: string; name: string }> = []): string {
   if (!assigneeId) return 'Unassigned';
   if (typeof assigneeId === 'object') return assigneeId.name;
+  if (typeof assigneeId === 'string') {
+    const found = members.find(m => m._id === assigneeId);
+    return found ? found.name : 'Assigned';
+  }
   return 'Unassigned';
 }
 
-function getAssigneeInitial(assigneeId: TaskUser | string | null): string {
-  const name = getAssigneeName(assigneeId);
+function getAssigneeInitial(assigneeId: TaskUser | string | null, members: Array<{ _id: string; name: string }> = []): string {
+  const name = getAssigneeName(assigneeId, members);
   return name === 'Unassigned' ? '?' : name.charAt(0).toUpperCase();
 }
 
@@ -655,6 +660,7 @@ export default function TasksPage() {
                     onDrop={handleDrop}
                     draggedTaskId={draggedTaskId}
                     dragOverStatus={dragOverStatus}
+                    teamMembers={teamMembers}
                   />
                 ) : (
                   <CalendarView
@@ -994,9 +1000,9 @@ function ListView({
                     className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white transition-colors truncate"
                   >
                     <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-500/30 to-blue-600/30 border border-slate-600 flex items-center justify-center text-[10px] font-bold text-cyan-300 flex-shrink-0">
-                      {getAssigneeInitial(task.assigneeId)}
+                      {getAssigneeInitial(task.assigneeId, teamMembers)}
                     </div>
-                    <span className="truncate">{getAssigneeName(task.assigneeId)}</span>
+                    <span className="truncate">{getAssigneeName(task.assigneeId, teamMembers)}</span>
                   </button>
                   {openDropdown?.taskId === task._id && openDropdown.field === 'assignee' && (
                     <InlineDropdown onClose={() => setOpenDropdown(null)}>
@@ -1044,7 +1050,7 @@ function ListView({
 function BoardView({
   statuses, tasksByStatus, filteredTasks, boardQuickAdd, setBoardQuickAdd,
   onQuickAdd, onSelectTask, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
-  draggedTaskId, dragOverStatus,
+  draggedTaskId, dragOverStatus, teamMembers,
 }: {
   statuses: TaskStatusItem[];
   tasksByStatus: Record<string, TaskItem[]>;
@@ -1060,6 +1066,7 @@ function BoardView({
   onDrop: (e: React.DragEvent, statusId: string) => void;
   draggedTaskId: string | null;
   dragOverStatus: string | null;
+  teamMembers: TeamMember[];
 }) {
   const filteredIds = new Set(filteredTasks.map(t => t._id));
 
@@ -1140,7 +1147,7 @@ function BoardView({
                     )}
                     <div className="flex items-center justify-between mt-2">
                       <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-500/30 to-blue-600/30 border border-slate-600 flex items-center justify-center text-[10px] font-bold text-cyan-300">
-                        {getAssigneeInitial(task.assigneeId)}
+                        {getAssigneeInitial(task.assigneeId, teamMembers)}
                       </div>
                     </div>
                   </motion.div>

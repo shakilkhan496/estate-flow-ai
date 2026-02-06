@@ -45,7 +45,6 @@ const RoleSchema = new Schema<IRole>(
   }
 );
 
-RoleSchema.index({ key: 1 }, { unique: true });
 RoleSchema.index({ orgType: 1 });
 
 const Role: Model<IRole> = mongoose.models.Role || mongoose.model<IRole>('Role', RoleSchema);
