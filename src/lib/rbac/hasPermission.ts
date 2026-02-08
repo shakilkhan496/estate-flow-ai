@@ -4,6 +4,7 @@ import OrganizationMember from '../models/OrganizationMember';
 import RolePermission from '../models/RolePermission';
 import Role from '../models/Role';
 import Permission from '../models/Permission';
+import User from '../models/User';
 import { PermissionScope } from '../models/RolePermission';
 
 export interface ResourceContext {
@@ -171,6 +172,11 @@ export async function isSuperAdmin(
   userId: string | Types.ObjectId
 ): Promise<boolean> {
   await dbConnect();
+
+  const user = await User.findById(userId).select('role');
+  if (user?.role === 'admin') {
+    return true;
+  }
 
   const memberships = await OrganizationMember.find({
     userId: new Types.ObjectId(userId.toString()),
