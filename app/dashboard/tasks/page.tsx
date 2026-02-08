@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   fetchSpaces, fetchLists, fetchStatuses, fetchTasks,
-  createTask, editTask, deleteTask, createSpace, createList, updateList, deleteList, seedTasks,
+  createTask, editTask, deleteTask, createSpace, updateSpace, deleteSpace, createList, updateList, deleteList, seedTasks,
   bulkDeleteTasks, bulkUpdateTasks, fetchTeamMembers,
 } from '@/store/actions/taskActions';
 import {
@@ -178,6 +178,8 @@ export default function TasksPage() {
   const [showMobileToolbar, setShowMobileToolbar] = useState(false);
   const [editingListId, setEditingListId] = useState<string | null>(null);
   const [editingListName, setEditingListName] = useState('');
+  const [editingSpaceId, setEditingSpaceId] = useState<string | null>(null);
+  const [editingSpaceName, setEditingSpaceName] = useState('');
 
   const quickAddRef = useRef<HTMLInputElement>(null);
 
@@ -1019,16 +1021,76 @@ export default function TasksPage() {
                 )}
                 {spaces.map(space => (
                   <div key={space._id}>
-                    <button
-                      onClick={() => handleSelectSpace(space._id)}
-                      className={`w-full flex items-center gap-2 px-4 py-1.5 text-left text-sm transition-colors ${
-                        selectedSpaceId === space._id ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      {expandedSpaces.has(space._id) ? <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />}
-                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: space.color || '#3b82f6' }} />
-                      <span className="truncate font-medium">{space.name}</span>
-                    </button>
+                    {editingSpaceId === space._id ? (
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          if (editingSpaceName.trim() && editingSpaceName.trim() !== space.name) {
+                            dispatch(updateSpace(space._id, { name: editingSpaceName.trim() }) as any);
+                          }
+                          setEditingSpaceId(null);
+                        }}
+                        className="flex items-center gap-2 px-4 py-1.5"
+                      >
+                        <ChevronDown className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
+                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: space.color || '#3b82f6' }} />
+                        <input
+                          autoFocus
+                          value={editingSpaceName}
+                          onChange={(e) => setEditingSpaceName(e.target.value)}
+                          onBlur={() => {
+                            if (editingSpaceName.trim() && editingSpaceName.trim() !== space.name) {
+                              dispatch(updateSpace(space._id, { name: editingSpaceName.trim() }) as any);
+                            }
+                            setEditingSpaceId(null);
+                          }}
+                          onKeyDown={(e) => { if (e.key === 'Escape') setEditingSpaceId(null); }}
+                          className="flex-1 text-sm font-medium bg-white border border-blue-300 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-blue-400"
+                        />
+                      </form>
+                    ) : (
+                      <div className="group relative flex items-center">
+                        <button
+                          onClick={() => handleSelectSpace(space._id)}
+                          className={`flex-1 flex items-center gap-2 px-4 py-1.5 text-left text-sm transition-colors ${
+                            selectedSpaceId === space._id ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          {expandedSpaces.has(space._id) ? <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />}
+                          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: space.color || '#3b82f6' }} />
+                          <span className="truncate font-medium">{space.name}</span>
+                        </button>
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingSpaceId(space._id);
+                              setEditingSpaceName(space.name);
+                            }}
+                            className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-blue-600 transition-colors"
+                            title="Rename workspace"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm('Delete this workspace and all its lists?')) {
+                                dispatch(deleteSpace(space._id) as any);
+                                if (selectedSpaceId === space._id) {
+                                  dispatch(setSelectedSpace(''));
+                                  dispatch(setSelectedList(''));
+                                }
+                              }
+                            }}
+                            className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-red-600 transition-colors"
+                            title="Delete workspace"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     <AnimatePresence>
                       {expandedSpaces.has(space._id) && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden">

@@ -126,6 +126,38 @@ export const createSpace = (data: { name: string; description?: string; color?: 
   }
 };
 
+export const updateSpace = (id: string, data: { name: string }) => async (dispatch: AppDispatch) => {
+  try {
+    const res = await fetch(`/api/tasks/spaces/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) {
+      dispatch(fetchSpaces() as unknown as ReturnType<typeof setSpaces>);
+      return { success: true };
+    }
+    return { success: false };
+  } catch {
+    return { success: false };
+  }
+};
+
+export const deleteSpace = (id: string) => async (dispatch: AppDispatch) => {
+  try {
+    const res = await fetch(`/api/tasks/spaces/${id}`, {
+      method: 'DELETE',
+    });
+    if (res.ok) {
+      dispatch(fetchSpaces() as unknown as ReturnType<typeof setSpaces>);
+      return { success: true };
+    }
+    return { success: false };
+  } catch {
+    return { success: false };
+  }
+};
+
 export const createList = (data: { name: string; spaceId: string; color?: string }) => async (dispatch: AppDispatch) => {
   try {
     const res = await fetch('/api/tasks/lists', {
