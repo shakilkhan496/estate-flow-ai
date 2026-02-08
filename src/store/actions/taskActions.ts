@@ -143,6 +143,38 @@ export const createList = (data: { name: string; spaceId: string; color?: string
   }
 };
 
+export const updateList = (id: string, data: { name: string }, spaceId: string) => async (dispatch: AppDispatch) => {
+  try {
+    const res = await fetch(`/api/tasks/lists/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) {
+      dispatch(fetchLists(spaceId) as unknown as ReturnType<typeof setLists>);
+      return { success: true };
+    }
+    return { success: false };
+  } catch {
+    return { success: false };
+  }
+};
+
+export const deleteList = (id: string, spaceId: string) => async (dispatch: AppDispatch) => {
+  try {
+    const res = await fetch(`/api/tasks/lists/${id}`, {
+      method: 'DELETE',
+    });
+    if (res.ok) {
+      dispatch(fetchLists(spaceId) as unknown as ReturnType<typeof setLists>);
+      return { success: true };
+    }
+    return { success: false };
+  } catch {
+    return { success: false };
+  }
+};
+
 export const seedTasks = () => async () => {
   try {
     const res = await fetch('/api/tasks/seed', { method: 'POST' });

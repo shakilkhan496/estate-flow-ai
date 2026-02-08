@@ -9,6 +9,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  if (!['admin', 'manager'].includes(auth.user.role)) {
+    return NextResponse.json({ error: 'Only managers and admins can edit lists' }, { status: 403 });
+  }
+
   const { id } = await params;
   const body = await request.json();
 

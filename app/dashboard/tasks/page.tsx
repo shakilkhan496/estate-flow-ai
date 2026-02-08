@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   fetchSpaces, fetchLists, fetchStatuses, fetchTasks,
-  createTask, editTask, deleteTask, createSpace, createList, seedTasks,
+  createTask, editTask, deleteTask, createSpace, createList, updateList, deleteList, seedTasks,
   bulkDeleteTasks, bulkUpdateTasks, fetchTeamMembers,
 } from '@/store/actions/taskActions';
 import {
@@ -26,7 +26,7 @@ import {
   Rows3, LayoutGrid, Calendar, Plus, Search, ChevronRight, ChevronDown,
   Menu, X, Sparkles, Database, ChevronLeft, Clock, User, Tag,
   Loader2, FolderOpen, ListTodo, ArrowUpDown, ArrowUp, ArrowDown,
-  Trash2, Check, Filter, Users, MoreHorizontal, Minus,
+  Trash2, Check, Filter, Users, MoreHorizontal, Minus, Pencil,
 } from 'lucide-react';
 
 const PRIORITY_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
@@ -176,6 +176,9 @@ export default function TasksPage() {
   const [detailTags, setDetailTags] = useState('');
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [showMobileToolbar, setShowMobileToolbar] = useState(false);
+  const [editingListId, setEditingListId] = useState<string | null>(null);
+  const [editingListName, setEditingListName] = useState('');
+
   const quickAddRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -1030,16 +1033,75 @@ export default function TasksPage() {
                       {expandedSpaces.has(space._id) && (
                         <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden">
                           {listsForSpace(space._id).map(list => (
-                            <button
-                              key={list._id}
-                              onClick={() => handleSelectList(list._id)}
-                              className={`w-full flex items-center gap-2 pl-10 pr-4 py-1.5 text-left text-sm transition-colors ${
-                                selectedListId === list._id ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'
-                              }`}
-                            >
-                              <ListTodo className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span className="truncate">{list.name}</span>
-                            </button>
+                            <div key={list._id} className="group relative flex items-center">
+                              {editingListId === list._id ? (
+                                <form
+                                  onSubmit={(e) => {
+                                    e.preventDefault();
+                                    if (editingListName.trim() && editingListName.trim() !== list.name) {
+                                      dispatch(updateList(list._id, { name: editingListName.trim() }, space._id) as any);
+                                    }
+                                    setEditingListId(null);
+                                  }}
+                                  className="flex-1 flex items-center gap-2 pl-10 pr-2 py-1"
+                                >
+                                  <ListTodo className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
+                                  <input
+                                    autoFocus
+                                    value={editingListName}
+                                    onChange={(e) => setEditingListName(e.target.value)}
+                                    onBlur={() => {
+                                      if (editingListName.trim() && editingListName.trim() !== list.name) {
+                                        dispatch(updateList(list._id, { name: editingListName.trim() }, space._id) as any);
+                                      }
+                                      setEditingListId(null);
+                                    }}
+                                    onKeyDown={(e) => { if (e.key === 'Escape') setEditingListId(null); }}
+                                    className="flex-1 text-sm bg-white border border-blue-300 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-blue-400"
+                                  />
+                                </form>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => handleSelectList(list._id)}
+                                    className={`flex-1 flex items-center gap-2 pl-10 pr-4 py-1.5 text-left text-sm transition-colors ${
+                                      selectedListId === list._id ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                  >
+                                    <ListTodo className="w-3.5 h-3.5 flex-shrink-0" />
+                                    <span className="truncate">{list.name}</span>
+                                  </button>
+                                  <div className="absolute right-1 top-1/2 -translate-y-1/2 hidden group-hover:flex items-center gap-0.5">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingListId(list._id);
+                                        setEditingListName(list.name);
+                                      }}
+                                      className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-blue-600 transition-colors"
+                                      title="Rename list"
+                                    >
+                                      <Pencil className="w-3 h-3" />
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (confirm('Delete this list and its tasks?')) {
+                                          dispatch(deleteList(list._id, space._id) as any);
+                                          if (selectedListId === list._id) {
+                                            dispatch(setSelectedList(''));
+                                          }
+                                        }
+                                      }}
+                                      className="p-1 rounded hover:bg-gray-200 text-gray-400 hover:text-red-600 transition-colors"
+                                      title="Delete list"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           ))}
                           <button
                             onClick={() => { setCreateListForSpace(space._id); setShowCreateList(true); }}
