@@ -30,8 +30,7 @@ app/
 │   ├── layout.tsx         # Dashboard layout with sidebar
 │   ├── deals/             # Deals with Table & Pipeline views
 │   ├── tasks/             # Task & Work Management module
-│   │   ├── page.tsx       # Tasks page with List/Board/Calendar views
-│   │   └── TaskDetailModal.tsx  # Task detail modal component
+│   │   └── page.tsx       # Airtable-style tasks page with Grid/Kanban/Calendar views
 │   ├── documents/         # Documents management page
 │   ├── team/              # Users management page (create, edit, delete users)
 │   ├── settings/          # Settings page
@@ -103,59 +102,59 @@ src/
 - **Deals** - Combined view with toggle between Table and Pipeline modes
 - **Offers** - Offers table with search, filters, sorting, pagination, CSV export
 - **Submissions** - Funder submission tracking
-- **Tasks** - Full Task & Work Management module (see below)
+- **Tasks** - Airtable-style task management with Grid, Kanban, and Calendar views
 - **Documents** - Document management with file listings
 - **Team** - Team member cards with stats (Admin/Manager only)
 - **Settings** - Account, notifications, security settings
 - **Super Admin** - Configure deal statuses, flags, products, originators, closers (Admin only)
 
 ## Task & Work Management Module
-ClickUp-like task management system with:
+Airtable-style task management system with spreadsheet grid interface:
 
 ### Hierarchy
 - **Space** (workspace area, e.g., "Sales Ops", "Underwriting")
 - **List** (where tasks live, belongs to a space)
-- **Task** (with subtasks, checklists, comments)
+- **Task** (rows in the grid with inline-editable fields)
 
 ### Data Models
 - **TaskSpace** - Workspace areas with name, color, icon
 - **TaskList** - Lists within spaces, auto-creates default statuses
-- **TaskStatus** - Per-list statuses (To Do, In Progress, Review, Blocked, Done) with types (open/in_progress/blocked/done)
-- **Task** - Full task with title, description, priority (low/medium/high/urgent), dates, assignee, watchers, tags, checklist items, CRM entity links, custom fields
-- **TaskComment** - Threaded comments with @mentions
-- **TaskActivity** - Activity log tracking status changes, assignee changes, etc.
+- **TaskStatus** - Per-list statuses (To Do, In Progress, Review, Blocked, Done)
+- **Task** - Full task with title, description, priority, dates, assignee, tags, checklist, custom fields
+- **TaskComment** - Threaded comments
+- **TaskActivity** - Activity/audit log
 
 ### Three Views
-1. **List View** - Table layout with columns (Title, Status, Priority, Assignee, Due Date, Tags), quick-add row, inline editing
-2. **Board/Kanban View** - Drag-and-drop columns by status, task cards with priority badges, assignee avatars, quick-add per column
-3. **Calendar View** - Monthly grid showing tasks by due date, day detail panel, prev/next navigation
+1. **Grid View (Primary)** - Airtable-style spreadsheet with columns (Checkbox, Title, Status, Priority, Assignee, Due Date, Tags, Created), inline editing, grouping by status/priority/assignee, bulk actions bar, quick-add row
+2. **Kanban View** - Status-based columns with task cards, quick-add per column
+3. **Calendar View** - Monthly grid showing tasks by due date
 
-### Task Detail Modal
-- Editable title and description (click-to-edit)
-- Status and priority selectors
-- Due date picker
+### Row Detail Panel
+- Slides in from right (Framer Motion)
+- Editable title, description, all fields
 - Checklist with progress bar
-- Subtasks list with add functionality
-- CRM entity links (lead, merchant, deal, submission, offer, funding, etc.)
-- Threaded comments
-- Activity timeline
-- Delete/archive actions
+- Delete action
+
+### Left Sidebar (within tasks page)
+- Collapsible workspace tree navigation
+- Expandable spaces with nested lists
+- Add space/list buttons
+- Seed demo data button
+
+### Toolbar
+- View tabs (Grid/Kanban/Calendar)
+- Search, Filter (priority/status/assignee), Sort, Group By
+- Active filter count pill
 
 ### API Routes
 - `/api/tasks/spaces` - Space CRUD
 - `/api/tasks/lists` - List CRUD (auto-creates default statuses)
 - `/api/tasks/statuses` - Status management per list
-- `/api/tasks/items` - Task CRUD with filtering (by list, space, assignee, status, priority, search, date range)
-- `/api/tasks/items/[id]` - Single task with subtasks
+- `/api/tasks/items` - Task CRUD with filtering
+- `/api/tasks/items/[id]` - Single task operations
 - `/api/tasks/items/[id]/comments` - Task comments
 - `/api/tasks/items/[id]/activity` - Task activity log
-- `/api/tasks/seed` - Seed demo data (admin only)
-
-### MCA-Specific Demo Data (via seed)
-- Sales Ops space: Lead Intake, Submission Packaging lists
-- Underwriting space: Underwriting Review, Offer Follow-up lists
-- Funding & Collections space: Funding & Closing, Renewals lists
-- Sample tasks with checklists, priorities, tags
+- `/api/tasks/seed` - Seed demo data
 
 ## Role-Based Access Control (RBAC)
 The app includes a comprehensive RBAC system with futuristic Role Builder UI.
@@ -186,12 +185,10 @@ npm run start    # Production server
 ```
 
 ## Recent Changes
-- Built complete Task & Work Management module with List, Board, Calendar views
-- Created TaskDetailModal with subtasks, checklists, comments, CRM linking, activity log
-- Added 6 Mongoose models for task system (TaskSpace, TaskList, TaskStatus, Task, TaskComment, TaskActivity)
-- Built full REST API for task management with filtering and activity tracking
-- Added Redux slice, actions, and selectors for task state management
-- Added seed endpoint for demo task data
-- Added Tasks link to sidebar navigation
+- Rebuilt Task module as Airtable-style spreadsheet interface with Grid, Kanban, Calendar views
+- Grid view: inline cell editing, row selection, bulk actions, grouping, sorting, filtering
+- Row Detail Panel slides in from right with all editable fields and checklist
+- Replaced TaskDetailModal with inline Row Detail Panel
+- Fixed Role Builder 403 errors by adding legacy admin role fallback to isSuperAdmin
 - Redesigned Role Builder page with futuristic dark theme UI
 - Dynamic company name in sidebar from Redux state
