@@ -180,6 +180,9 @@ export default function TasksPage() {
   const [editingListName, setEditingListName] = useState('');
   const [editingSpaceId, setEditingSpaceId] = useState<string | null>(null);
   const [editingSpaceName, setEditingSpaceName] = useState('');
+  const [titleColWidth, setTitleColWidth] = useState(320);
+  const titleResizing = useRef(false);
+  const titleResizeStart = useRef({ x: 0, width: 0 });
 
   const quickAddRef = useRef<HTMLInputElement>(null);
 
@@ -460,6 +463,32 @@ export default function TasksPage() {
     });
   };
 
+  const gridCols = `40px ${titleColWidth}px 150px 120px 150px 140px 180px 120px`;
+
+  const onTitleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    titleResizing.current = true;
+    titleResizeStart.current = { x: e.clientX, width: titleColWidth };
+    const onMove = (ev: MouseEvent) => {
+      if (!titleResizing.current) return;
+      const delta = ev.clientX - titleResizeStart.current.x;
+      const newWidth = Math.max(150, Math.min(800, titleResizeStart.current.width + delta));
+      setTitleColWidth(newWidth);
+    };
+    const onUp = () => {
+      titleResizing.current = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }, [titleColWidth]);
+
   const SortIcon = ({ field }: { field: string }) => {
     if (sortBy !== field) return <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />;
     return sortDirection === 'asc' ? <ArrowUp className="w-3.5 h-3.5 text-blue-600" /> : <ArrowDown className="w-3.5 h-3.5 text-blue-600" />;
@@ -484,9 +513,10 @@ export default function TasksPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.15, delay: index * 0.02 }}
-        className={`grid grid-cols-[40px_minmax(200px,2fr)_150px_120px_150px_140px_180px_120px] items-center h-[44px] border-b border-gray-100 text-sm cursor-pointer group ${
+        className={`items-center h-[44px] border-b border-gray-100 text-sm cursor-pointer group ${
           isSelected ? 'bg-blue-50' : index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
         } hover:bg-blue-50/60 transition-colors`}
+        style={{ display: 'grid', gridTemplateColumns: gridCols }}
         onClick={() => openDetail(task)}
       >
         <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
@@ -625,13 +655,12 @@ export default function TasksPage() {
   };
 
   const renderGridView = () => {
-    const headerCols = 'grid grid-cols-[40px_minmax(200px,2fr)_150px_120px_150px_140px_180px_120px]';
     const rows = groupBy === 'none' ? displayTasks : null;
 
     return (
       <div className="flex-1 overflow-auto">
-        <div className="min-w-[1100px]">
-          <div className={`${headerCols} items-center h-[36px] bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 z-10`}>
+        <div style={{ minWidth: `${40 + titleColWidth + 150 + 120 + 150 + 140 + 180 + 120}px` }}>
+          <div className="items-center h-[36px] bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider sticky top-0 z-10" style={{ display: 'grid', gridTemplateColumns: gridCols }}>
             <div className="flex items-center justify-center">
               <input
                 type="checkbox"
@@ -640,9 +669,16 @@ export default function TasksPage() {
                 className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
               />
             </div>
-            <button onClick={() => handleSort('title')} className="flex items-center gap-1 px-3 hover:text-gray-700 transition-colors">
-              Title <SortIcon field="title" />
-            </button>
+            <div className="relative flex items-center">
+              <button onClick={() => handleSort('title')} className="flex items-center gap-1 px-3 hover:text-gray-700 transition-colors">
+                Title <SortIcon field="title" />
+              </button>
+              <div
+                onMouseDown={onTitleResizeStart}
+                className="absolute right-0 top-0 bottom-0 w-[5px] cursor-col-resize hover:bg-blue-400/40 active:bg-blue-500/50 z-20"
+                title="Drag to resize"
+              />
+            </div>
             <div className="px-3">Status</div>
             <button onClick={() => handleSort('priority')} className="flex items-center gap-1 px-3 hover:text-gray-700 transition-colors">
               Priority <SortIcon field="priority" />
